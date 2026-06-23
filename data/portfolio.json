@@ -1,0 +1,233 @@
+{
+  "portfolio": [
+    {
+      "id": 1,
+      "title": "Cyberpunk Alley Composite",
+      "category": "VFX & Video",
+      "client": "Cinematic Lab",
+      "software": [
+        "Nuke",
+        "After Effects",
+        "Blender"
+      ],
+      "videoUrl": "https://player.vimeo.com/video/853401569",
+      "thumbnail": "https://images.unsplash.com/photo-1578894381163-e72c17f2d45f?auto=format&fit=crop&q=80&w=800",
+      "description": "Full photorealistic environment extension. Replaced a basic urban alley with a glowing, rainy neon sci-fi alleyway, including CG hover cars and hologram projections."
+    },
+    {
+      "id": 2,
+      "title": "Apex Legends CGI Intro",
+      "category": "VFX & Video",
+      "client": "Gaming Guild",
+      "software": [
+        "Cinema 4D",
+        "After Effects",
+        "Octane Render"
+      ],
+      "videoUrl": "https://player.vimeo.com/video/178720188",
+      "thumbnail": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=800",
+      "description": "Action-packed CGI opening sequence with complex particle dynamics, volumetric smoke, and fluid character animations integrated with graphic titles."
+    },
+    {
+      "id": 3,
+      "title": "Social Media Ad Campaign",
+      "category": "VFX & Video",
+      "client": "FitLife Apparel",
+      "software": [
+        "Premiere Pro",
+        "After Effects",
+        "DaVinci Resolve"
+      ],
+      "videoUrl": "https://player.vimeo.com/video/853401569",
+      "thumbnail": "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=800",
+      "description": "High-impact social media video campaign optimized for Instagram Reels and TikTok. Engineered hyper-fast cuts, custom sound FX sweeps, and bold typography overlays."
+    },
+    {
+      "id": 4,
+      "title": "Nike Commercial Grade",
+      "category": "VFX & Video",
+      "client": "Nike Run",
+      "software": [
+        "DaVinci Resolve",
+        "Premiere Pro"
+      ],
+      "videoUrl": "https://player.vimeo.com/video/853401569",
+      "thumbnail": "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&q=80&w=800",
+      "description": "High-contrast commercial edit. Directed the dramatic color grading to emphasize muscle definition, texture of the sportswear, and sunrise lighting highlights."
+    },
+    {
+      "id": 5,
+      "title": "Valo Esports Identity",
+      "category": "Design",
+      "client": "Valo Esports",
+      "software": [
+        "Illustrator",
+        "Photoshop"
+      ],
+      "videoUrl": "",
+      "thumbnail": "https://images.unsplash.com/photo-1614680376593-902f74fa0d41?auto=format&fit=crop&q=80&w=800",
+      "description": "Complete logo branding and visual identity system for an elite esports league. Formulated modern logos, typography rules, jersey prints, and stream assets."
+    },
+    {
+      "id": 6,
+      "title": "Cosmic HUD UI System",
+      "category": "Design",
+      "client": "Indie Game Studio",
+      "software": [
+        "Figma",
+        "Illustrator",
+        "After Effects"
+      ],
+      "videoUrl": "",
+      "thumbnail": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=800",
+      "description": "Design of an interactive futuristic Heads-Up Display (HUD) system. Includes vector dials, telemetry gauges, and custom motion graphic warning loops."
+    },
+    {
+      "id": 7,
+      "title": "Synthwave Album Cover",
+      "category": "Design",
+      "client": "RetroBeats Music",
+      "software": [
+        "Photoshop",
+        "Blender"
+      ],
+      "videoUrl": "",
+      "thumbnail": "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=800",
+      "description": "80s retro-futuristic cover art featuring a grid-pattern sunset, chrome lettering, and a detailed 3D wireframe sports car styled in Photoshop."
+    },
+    {
+      "id": 8,
+      "title": "Aura Perfume Campaign",
+      "category": "Design",
+      "client": "Aura Fragrance",
+      "software": [
+        "Blender",
+        "Photoshop",
+        "Illustrator"
+      ],
+      "videoUrl": "",
+      "thumbnail": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&q=80&w=800",
+      "description": "Visual identity campaign and package logo branding. Drafted minimal product layouts and rendered 3D product shots in atmospheric settings."
+    }
+  ],
+  "categories": [
+    "VFX & Video",
+    "Design"
+  ],
+  "services": [
+    {
+      "id": 1,
+      "title": "VFX & Video Production",
+      "description": "Photorealistic CGI integration, green-screen keying, environment extensions, rotoscoping, and full RED/ARRI camera workflows.",
+      "accent": "#8b5cf6",
+      "skills": [
+        "Nuke",
+        "Blender",
+        "After Effects",
+        "Red/Arri"
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Social Media Campaigns",
+      "description": "High-octane pacing, colour grading, sound design, and narrative edits optimised for TikTok, Instagram Reels, and YouTube Shorts.",
+      "accent": "#06b6d4",
+      "skills": [
+        "Premiere Pro",
+        "DaVinci Resolve",
+        "CapCut Pro",
+        "Strategy"
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Logo Branding & Design",
+      "description": "Creative visual identities, vector logos, corporate style guides, typography animations, and high-converting marketing graphics.",
+      "accent": "#f97316",
+      "skills": [
+        "Illustrator",
+        "Photoshop",
+        "After Effects",
+        "Strategy"
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "id": 1,
+      "name": "CREATIVE DESIGN",
+      "pct": 95
+    },
+    {
+      "id": 2,
+      "name": "VIDEO EDITING",
+      "pct": 90
+    },
+    {
+      "id": 3,
+      "name": "LOGO BRANDING",
+      "pct": 92
+    },
+    {
+      "id": 4,
+      "name": "SOCIAL MEDIA HANDLING",
+      "pct": 88
+    }
+  ],
+  "toolkit": [
+    {
+      "id": 1,
+      "name": "After Effects",
+      "cat": "VFX / Motion",
+      "level": "Expert"
+    },
+    {
+      "id": 2,
+      "name": "Premiere Pro",
+      "cat": "Video Editing",
+      "level": "Expert"
+    },
+    {
+      "id": 3,
+      "name": "DaVinci Resolve",
+      "cat": "Color / Grade",
+      "level": "Expert"
+    },
+    {
+      "id": 4,
+      "name": "Nuke",
+      "cat": "Compositing",
+      "level": "Advanced"
+    },
+    {
+      "id": 5,
+      "name": "Blender",
+      "cat": "3D Modelling",
+      "level": "Intermediate"
+    },
+    {
+      "id": 6,
+      "name": "Photoshop",
+      "cat": "Graphic Design",
+      "level": "Expert"
+    },
+    {
+      "id": 7,
+      "name": "Illustrator",
+      "cat": "Vector Design",
+      "level": "Expert"
+    },
+    {
+      "id": 8,
+      "name": "CorelDRAW",
+      "cat": "Vector / Print",
+      "level": "Advanced"
+    },
+    {
+      "id": 9,
+      "name": "InDesign",
+      "cat": "Print / Layout",
+      "level": "Intermediate"
+    }
+  ]
+}
