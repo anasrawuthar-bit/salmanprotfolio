@@ -20,14 +20,32 @@ const contactInfo = [
 export default function Contact() {
   const [form, setForm] = useState({ name: "", email: "", subject: "VFX Project", message: "" });
   const [status, setStatus] = useState<"idle" | "sending" | "done">("idle");
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("sending");
-    setTimeout(() => {
-      setStatus("done");
-      setForm({ name: "", email: "", subject: "VFX Project", message: "" });
-    }, 1600);
+    setError("");
+
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      if (res.ok) {
+        setStatus("done");
+        setForm({ name: "", email: "", subject: "VFX Project", message: "" });
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Failed to send message. Please try again.");
+        setStatus("idle");
+      }
+    } catch (err) {
+      setError("A network error occurred. Please check your connection and try again.");
+      setStatus("idle");
+    }
   };
 
   return (
@@ -126,6 +144,10 @@ export default function Contact() {
                     className="w-full px-4 py-3.5 rounded-xl bg-zinc-950/50 border border-zinc-800/60 text-zinc-200 placeholder-zinc-700 focus:outline-none focus:border-brand-cyan/50 focus:ring-1 focus:ring-brand-cyan/30 transition-all text-sm font-heading resize-none"
                   />
                 </div>
+
+                {error && (
+                  <p className="text-xs text-red-400 font-heading text-center mt-2">{error}</p>
+                )}
 
                 {/* Submit */}
                 <motion.button
