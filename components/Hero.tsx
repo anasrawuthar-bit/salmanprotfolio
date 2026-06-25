@@ -121,7 +121,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            className="text-[clamp(3.5rem,12vw,9rem)] font-display font-black tracking-tighter leading-none text-zinc-100 select-none"
+            className="text-[clamp(1.8rem,8.5vw,9rem)] font-display font-black tracking-tighter leading-none text-zinc-100 select-none"
           >
             MOHAMMED
           </motion.h1>
@@ -131,7 +131,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
-            className="text-[clamp(3.5rem,12vw,9rem)] font-display font-black tracking-tighter leading-none select-none bg-gradient-to-r from-brand-purple via-brand-cyan to-brand-amber bg-clip-text text-transparent animate-gradient-text text-glow-purple"
+            className="text-[clamp(1.8rem,8.5vw,9rem)] font-display font-black tracking-tighter leading-none select-none bg-gradient-to-r from-brand-purple via-brand-cyan to-brand-amber bg-clip-text text-transparent animate-gradient-text text-glow-purple"
           >
             SALMAN
           </motion.h1>
