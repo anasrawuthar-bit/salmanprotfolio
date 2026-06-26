@@ -8,9 +8,9 @@ const DURATION_MS = 3800;
 
 const STATUSES = [
   { at: 0,  text: "INITIALIZING CREATIVE ENVIRONMENT..." },
-  { at: 25, text: "COMPILING VFX PLATES & 3D MODELS..."  },
+  { at: 25, text: "ORGANIZING TIMELINES & VIDEO ASSETS..." },
   { at: 55, text: "CALIBRATING COLOR SPACES & LUTS..."   },
-  { at: 85, text: "EXPORTING MASTER COMPOSITE..."        },
+  { at: 85, text: "EXPORTING FINAL COMPOSITION..."       },
 ];
 
 export default function Preloader() {

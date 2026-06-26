@@ -1,7 +1,7 @@
 "use client";
 
 const items = [
-  "VFX & COMPOSITING",
+  "MOTION GRAPHICS",
   "CINEMATIC VIDEO EDITING",
   "LOGO BRANDING",
   "MARKETING CAMPAIGNS",

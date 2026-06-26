@@ -1,34 +1,35 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   LogOut, Plus, Trash2, Save, Film, Briefcase, Wrench,
-  BarChart2, ChevronDown, ChevronUp, Lock, Eye, EyeOff,
-  Layers, Pencil, X, Check, GripVertical
+  BarChart2, Lock, Eye, EyeOff, Pencil, X, Check,
+  GripVertical, Upload, ImageIcon, Link2, Globe2, ExternalLink,
+  ChevronLeft, ChevronRight, FolderPlus, AlertCircle
 } from "lucide-react";
 
 /* ─── Types ──────────────────────────────────────── */
-interface Project {
-  id: number; title: string; category: string; client: string;
-  software: string[]; videoUrl: string; thumbnail: string; description: string;
-}
-interface Service {
-  id: number; title: string; description: string; accent: string; skills: string[];
-}
-interface Skill { id: number; name: string; pct: number; }
-interface ToolItem { id: number; name: string; cat: string; level: string; }
+interface GalleryWork { id: number; category: string; image: string; }
+interface GalleryData  { categories: string[]; works: GalleryWork[]; }
+interface Service      { id: number; title: string; description: string; accent: string; skills: string[]; }
+interface Skill        { id: number; name: string; pct: number; }
+interface ToolItem     { id: number; name: string; cat: string; level: string; }
+interface Social       { behance: string; instagram: string; youtube: string; linkedin: string; }
 interface SiteData {
-  portfolio: Project[]; categories: string[];
-  services: Service[]; skills: Skill[]; toolkit: ToolItem[];
+  gallery:  GalleryData;
+  services: Service[];
+  skills:   Skill[];
+  toolkit:  ToolItem[];
+  social:   Social;
 }
 
 /* ─── Helpers ─────────────────────────────────────── */
 const TABS = [
-  { key: "portfolio", label: "Portfolio",  icon: Film },
-  { key: "services",  label: "Services",   icon: Briefcase },
-  { key: "skills",    label: "Skills",     icon: BarChart2 },
-  { key: "toolkit",   label: "Toolkit",    icon: Wrench },
-  { key: "categories",label: "Categories", icon: Layers },
+  { key: "portfolio", label: "Gallery",   icon: Film },
+  { key: "services",  label: "Services",  icon: Briefcase },
+  { key: "skills",    label: "Skills",    icon: BarChart2 },
+  { key: "toolkit",   label: "Toolkit",   icon: Wrench },
+  { key: "social",    label: "Social",    icon: Globe2 },
 ] as const;
 type Tab = typeof TABS[number]["key"];
 
@@ -58,7 +59,7 @@ export default function AdminPage() {
       .then((res) => {
         if (res.authed) {
           fetch("/api/data", { credentials: "same-origin" }).then((r) => {
-            if (r.ok) r.json().then((d) => { setData(d); setAuthed(true); });
+            if (r.ok) r.json().then((d) => { setData(normalise(d)); setAuthed(true); });
           });
         }
       })
@@ -69,15 +70,15 @@ export default function AdminPage() {
   async function login(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true); setAuthErr("");
-    const r = await fetch("/api/auth", { 
-      method: "POST", 
-      headers: { "Content-Type": "application/json" }, 
+    const r = await fetch("/api/auth", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ password }),
       credentials: "same-origin"
     });
     if (r.ok) {
       const d = await fetch("/api/data", { credentials: "same-origin" }).then((r) => r.json());
-      setData(d); setAuthed(true);
+      setData(normalise(d)); setAuthed(true);
     } else {
       setAuthErr("Incorrect password. Try again.");
     }
@@ -102,18 +103,18 @@ export default function AdminPage() {
         credentials: "same-origin"
       });
       if (r.ok) {
-        const resData = await r.json().catch(() => ({}));
-        if (resData.github) {
-          alert("Success! Changes committed to GitHub. Vercel will rebuild your site automatically (this usually takes 1-2 minutes to show up on the live site).");
+        const res = await r.json().catch(() => ({}));
+        if (res.github) {
+          alert("Saved! Changes committed to GitHub. Vercel will rebuild your site in ~1–2 minutes.");
         }
         setSaved(true);
         setTimeout(() => setSaved(false), 2500);
       } else {
-        const errData = await r.json().catch(() => ({}));
-        alert(`Failed to save changes: ${errData.error || r.statusText || "Unknown error"}`);
+        const err = await r.json().catch(() => ({}));
+        alert(`Failed to save: ${err.error || r.statusText}`);
       }
     } catch (err) {
-      alert(`Network error saving changes: ${err instanceof Error ? err.message : String(err)}`);
+      alert(`Network error: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       setSaving(false);
     }
@@ -131,7 +132,6 @@ export default function AdminPage() {
             <h1 className="text-2xl font-display font-black text-zinc-100 mb-1">ADMIN PANEL</h1>
             <p className="text-xs font-heading text-zinc-600 uppercase tracking-widest">Salman Studio CMS</p>
           </div>
-
           <form onSubmit={login} className="space-y-4">
             <div className="relative">
               <input
@@ -206,122 +206,292 @@ export default function AdminPage() {
 
         {/* Panel content */}
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
-          {tab === "portfolio"  && <PortfolioPanel  data={data} setData={setData} />}
-          {tab === "services"   && <ServicesPanel   data={data} setData={setData} />}
-          {tab === "skills"     && <SkillsPanel     data={data} setData={setData} />}
-          {tab === "toolkit"    && <ToolkitPanel    data={data} setData={setData} />}
-          {tab === "categories" && <CategoriesPanel data={data} setData={setData} />}
+          {tab === "portfolio" && <GalleryPanel  data={data} setData={setData} />}
+          {tab === "services"  && <ServicesPanel  data={data} setData={setData} />}
+          {tab === "skills"    && <SkillsPanel    data={data} setData={setData} />}
+          {tab === "toolkit"   && <ToolkitPanel   data={data} setData={setData} />}
+          {tab === "social"    && <SocialPanel    data={data} setData={setData} />}
         </main>
       </div>
     </div>
   );
 }
 
-/* ══════════════════════════════════════════════════
-   PORTFOLIO PANEL
-══════════════════════════════════════════════════ */
-function PortfolioPanel({ data, setData }: { data: SiteData; setData: (d: SiteData) => void }) {
-  const [editing, setEditing] = useState<Project | null>(null);
+/* ── Normalise legacy data shape ─────────────────── */
+function normalise(d: Record<string, unknown>): SiteData {
+  return {
+    gallery:  (d.gallery as GalleryData) ?? { categories: [], works: [] },
+    services: (d.services as Service[])  ?? [],
+    skills:   (d.skills   as Skill[])    ?? [],
+    toolkit:  (d.toolkit  as ToolItem[]) ?? [],
+    social:   (d.social   as Social)     ?? { behance: "", instagram: "", youtube: "", linkedin: "" },
+  };
+}
 
-  function saveProject(p: Project) {
-    const exists = data.portfolio.find((x) => x.id === p.id);
-    const portfolio = exists
-      ? data.portfolio.map((x) => (x.id === p.id ? p : x))
-      : [...data.portfolio, p];
-    setData({ ...data, portfolio });
-    setEditing(null);
+/* ══════════════════════════════════════════════════
+   GALLERY PANEL
+══════════════════════════════════════════════════ */
+type UploadItem = { name: string; status: "uploading" | "done" | "error"; };
+
+function GalleryPanel({ data, setData }: { data: SiteData; setData: (d: SiteData) => void }) {
+  const gallery = data.gallery ?? { categories: [], works: [] };
+  const [activeCat, setActiveCat]     = useState<string>(gallery.categories[0] ?? "");
+  const [newCat, setNewCat]           = useState("");
+  const [uploads, setUploads]         = useState<UploadItem[]>([]);
+  const [dragging, setDragging]       = useState(false);
+  const fileRef                       = useRef<HTMLInputElement>(null);
+
+  /* keep activeCat in sync when categories change */
+  useEffect(() => {
+    if (!gallery.categories.includes(activeCat) && gallery.categories.length > 0) {
+      setActiveCat(gallery.categories[0]);
+    }
+  }, [gallery.categories]);
+
+  const catWorks = gallery.works.filter((w) => w.category === activeCat);
+
+  /* ── Upload multiple files ── */
+  async function handleFiles(files: FileList | File[]) {
+    const arr = Array.from(files).filter((f) => f.type.startsWith("image/"));
+    if (!arr.length) return;
+    setUploads(arr.map((f) => ({ name: f.name, status: "uploading" })));
+
+    const newWorks: GalleryWork[] = [];
+
+    for (let i = 0; i < arr.length; i++) {
+      const file = arr[i];
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res  = await fetch("/api/upload", { method: "POST", body: fd, credentials: "same-origin" });
+        const json = await res.json();
+        if (res.ok) {
+          newWorks.push({ id: Date.now() + i, category: activeCat, image: json.url });
+          setUploads((prev) => prev.map((u, idx) => idx === i ? { ...u, status: "done" } : u));
+        } else {
+          setUploads((prev) => prev.map((u, idx) => idx === i ? { ...u, status: "error" } : u));
+        }
+      } catch {
+        setUploads((prev) => prev.map((u, idx) => idx === i ? { ...u, status: "error" } : u));
+      }
+    }
+
+    if (newWorks.length > 0) {
+      setData({ ...data, gallery: { ...gallery, works: [...gallery.works, ...newWorks] } });
+    }
+    setTimeout(() => setUploads([]), 3500);
   }
 
-  function deleteProject(id: number) {
-    if (!confirm("Delete this project?")) return;
-    setData({ ...data, portfolio: data.portfolio.filter((x) => x.id !== id) });
+  /* ── Delete image ── */
+  function deleteWork(id: number) {
+    setData({ ...data, gallery: { ...gallery, works: gallery.works.filter((w) => w.id !== id) } });
+  }
+
+  /* ── Move image left/right within category ── */
+  function moveWork(id: number, dir: -1 | 1) {
+    const catList = gallery.works.filter((w) => w.category === activeCat);
+    const others  = gallery.works.filter((w) => w.category !== activeCat);
+    const idx     = catList.findIndex((w) => w.id === id);
+    if (idx === -1) return;
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= catList.length) return;
+    const next = [...catList];
+    [next[idx], next[newIdx]] = [next[newIdx], next[idx]];
+    setData({ ...data, gallery: { ...gallery, works: [...others, ...next] } });
+  }
+
+  /* ── Add category ── */
+  function addCategory() {
+    const v = newCat.trim();
+    if (!v || gallery.categories.includes(v)) return;
+    const updated = { ...gallery, categories: [...gallery.categories, v] };
+    setData({ ...data, gallery: updated });
+    setActiveCat(v);
+    setNewCat("");
+  }
+
+  /* ── Delete category ── */
+  function deleteCategory(cat: string) {
+    const count = gallery.works.filter((w) => w.category === cat).length;
+    const msg = count > 0
+      ? `Delete "${cat}" and its ${count} image${count > 1 ? "s" : ""}? This cannot be undone.`
+      : `Delete category "${cat}"?`;
+    if (!confirm(msg)) return;
+    const categories = gallery.categories.filter((c) => c !== cat);
+    const works      = gallery.works.filter((w) => w.category !== cat);
+    setData({ ...data, gallery: { categories, works } });
+    setActiveCat(categories[0] ?? "");
+  }
+
+  /* ── Drag & Drop ── */
+  function onDragOver(e: React.DragEvent) { e.preventDefault(); setDragging(true); }
+  function onDragLeave()                   { setDragging(false); }
+  function onDrop(e: React.DragEvent) {
+    e.preventDefault(); setDragging(false);
+    handleFiles(e.dataTransfer.files);
   }
 
   return (
     <div>
-      <PanelHeader title="Portfolio Works" count={data.portfolio.length} onAdd={() => setEditing({ id: newId(data.portfolio), title: "", category: data.categories[0] ?? "", client: "", software: [], videoUrl: "", thumbnail: "", description: "" })} />
+      <PanelHeader title="Gallery" />
+      <p className="text-zinc-600 text-xs font-heading mt-1 mb-8">
+        Upload images per category. They display in a masonry grid on your portfolio page.
+      </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-6">
-        {data.portfolio.map((p) => (
-          <div key={p.id} className="rounded-2xl bg-zinc-950/60 border border-zinc-800/60 overflow-hidden group">
-            <div className="aspect-video relative">
-              {p.thumbnail ? (
-                <img src={p.thumbnail} alt={p.title} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-zinc-900 flex items-center justify-center text-zinc-700 text-xs">No image</div>
-              )}
-              <span className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/70 text-[9px] font-heading font-bold text-brand-cyan">{p.category}</span>
-            </div>
-            <div className="p-4">
-              <h3 className="font-heading font-black text-sm text-zinc-100 truncate">{p.title || "Untitled"}</h3>
-              <p className="text-zinc-600 text-[11px] mt-0.5 mb-3">{p.client}</p>
-              <div className="flex gap-2">
-                <button onClick={() => setEditing(p)} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-heading font-bold text-zinc-400 hover:text-zinc-100 hover:border-zinc-600 cursor-pointer transition-all">
-                  <Pencil className="w-3 h-3" />Edit
-                </button>
-                <button onClick={() => deleteProject(p.id)} className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-600 hover:text-red-400 hover:border-red-900 cursor-pointer transition-all">
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
+      {/* ── Category tabs + Add ── */}
+      <div className="flex flex-wrap items-center gap-2 mb-8">
+        {gallery.categories.map((cat) => (
+          <div key={cat} className="flex items-center gap-1 group">
+            <button
+              onClick={() => setActiveCat(cat)}
+              className={`px-4 py-2 rounded-xl text-xs font-heading font-black uppercase tracking-wider transition-all cursor-pointer ${activeCat === cat ? "bg-brand-purple text-zinc-100" : "bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-zinc-200"}`}
+            >
+              {cat}
+              <span className="ml-2 text-[9px] opacity-60">
+                {gallery.works.filter((w) => w.category === cat).length}
+              </span>
+            </button>
+            <button
+              onClick={() => deleteCategory(cat)}
+              className="p-1.5 rounded-lg text-zinc-700 hover:text-red-400 hover:bg-red-900/20 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+              title={`Delete ${cat}`}
+            >
+              <X className="w-3 h-3" />
+            </button>
           </div>
         ))}
+
+        {/* Add new category */}
+        <div className="flex items-center gap-2">
+          <input
+            value={newCat}
+            onChange={(e) => setNewCat(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && addCategory()}
+            placeholder="New category..."
+            className="w-36 px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-300 placeholder-zinc-700 text-xs font-heading focus:outline-none focus:border-brand-cyan/50"
+          />
+          <button
+            onClick={addCategory}
+            disabled={!newCat.trim()}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-brand-cyan/20 border border-brand-cyan/30 text-brand-cyan font-heading font-black text-xs hover:bg-brand-cyan/30 cursor-pointer transition-all disabled:opacity-40"
+          >
+            <FolderPlus className="w-3.5 h-3.5" /> Add
+          </button>
+        </div>
       </div>
 
-      {editing && (
-        <ProjectModal
-          project={editing}
-          categories={data.categories}
-          onSave={saveProject}
-          onClose={() => setEditing(null)}
-        />
-      )}
-    </div>
-  );
-}
-
-function ProjectModal({ project, categories, onSave, onClose }: { project: Project; categories: string[]; onSave: (p: Project) => void; onClose: () => void }) {
-  const [p, setP] = useState<Project>(project);
-  const [sw, setSw] = useState(project.software.join(", "));
-
-  function handleSave() {
-    onSave({ ...p, software: sw.split(",").map((s) => s.trim()).filter(Boolean) });
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-zinc-950 border border-zinc-800 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-[0_0_60px_rgba(139,92,246,0.15)]">
-        <div className="flex items-center justify-between p-5 border-b border-zinc-800">
-          <h2 className="font-heading font-black text-sm text-zinc-100 uppercase tracking-wider">{project.title ? "Edit Project" : "New Project"}</h2>
-          <button onClick={onClose} className="text-zinc-600 hover:text-zinc-300 cursor-pointer"><X className="w-5 h-5" /></button>
+      {gallery.categories.length === 0 ? (
+        <div className="py-20 text-center border-2 border-dashed border-zinc-800 rounded-2xl">
+          <FolderPlus className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
+          <p className="text-zinc-500 font-heading font-bold text-xs uppercase tracking-widest">Create a category to start uploading</p>
         </div>
-        <div className="p-5 space-y-4">
-          <FormField label="Title" value={p.title} onChange={(v) => setP({ ...p, title: v })} />
-          <div>
-            <label className="block text-[10px] font-heading font-black uppercase tracking-widest text-zinc-500 mb-2">Category</label>
-            <select value={p.category} onChange={(e) => setP({ ...p, category: e.target.value })} className="w-full px-3 py-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 text-sm font-heading focus:outline-none focus:border-brand-purple/50">
-              {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
+      ) : (
+        <>
+          {/* ── Upload zone ── */}
+          <div
+            onClick={() => fileRef.current?.click()}
+            onDragOver={onDragOver}
+            onDragLeave={onDragLeave}
+            onDrop={onDrop}
+            className={`relative flex flex-col items-center justify-center gap-3 p-8 rounded-2xl border-2 border-dashed cursor-pointer transition-all mb-6 ${dragging ? "border-brand-purple bg-brand-purple/10" : "border-zinc-800 hover:border-zinc-600 bg-zinc-950/40 hover:bg-zinc-900/40"}`}
+          >
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => e.target.files && handleFiles(e.target.files)}
+            />
+            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800">
+              <Upload className="w-5 h-5 text-zinc-500" />
+            </div>
+            <div className="text-center">
+              <p className="text-sm font-heading font-black text-zinc-300">
+                <span className="text-brand-cyan">Click to browse</span> or drag & drop
+              </p>
+              <p className="text-[11px] font-heading text-zinc-600 mt-1">
+                Select multiple images — uploading to <span className="text-brand-purple font-black">{activeCat}</span>
+              </p>
+            </div>
           </div>
-          <FormField label="Client" value={p.client} onChange={(v) => setP({ ...p, client: v })} />
-          <FormField label="Thumbnail URL" value={p.thumbnail} onChange={(v) => setP({ ...p, thumbnail: v })} placeholder="https://..." />
-          <FormField label="Video URL (Vimeo embed, optional)" value={p.videoUrl} onChange={(v) => setP({ ...p, videoUrl: v })} placeholder="https://player.vimeo.com/video/..." />
-          <FormField label="Software (comma-separated)" value={sw} onChange={setSw} placeholder="After Effects, Nuke, Blender" />
-          <div>
-            <label className="block text-[10px] font-heading font-black uppercase tracking-widest text-zinc-500 mb-2">Description</label>
-            <textarea value={p.description} onChange={(e) => setP({ ...p, description: e.target.value })} rows={3} className="w-full px-3 py-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 text-sm font-heading focus:outline-none focus:border-brand-purple/50 resize-none" />
-          </div>
-          {p.thumbnail && (
-            <div className="aspect-video rounded-lg overflow-hidden border border-zinc-800">
-              <img src={p.thumbnail} alt="Preview" className="w-full h-full object-cover" />
+
+          {/* ── Upload progress ── */}
+          {uploads.length > 0 && (
+            <div className="mb-6 space-y-2">
+              {uploads.map((u, i) => (
+                <div key={i} className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800">
+                  {u.status === "uploading" && (
+                    <div className="w-3.5 h-3.5 rounded-full border-2 border-brand-purple border-t-transparent animate-spin shrink-0" />
+                  )}
+                  {u.status === "done" && <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                  {u.status === "error" && <AlertCircle className="w-3.5 h-3.5 text-red-400 shrink-0" />}
+                  <span className="text-xs font-heading text-zinc-400 truncate flex-1">{u.name}</span>
+                  <span className={`text-[10px] font-heading font-black uppercase tracking-wider ${u.status === "done" ? "text-emerald-400" : u.status === "error" ? "text-red-400" : "text-zinc-600"}`}>
+                    {u.status === "uploading" ? "Uploading…" : u.status === "done" ? "Done" : "Failed"}
+                  </span>
+                </div>
+              ))}
             </div>
           )}
-        </div>
-        <div className="flex gap-3 p-5 border-t border-zinc-800">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-lg border border-zinc-800 text-zinc-500 font-heading font-bold text-sm hover:text-zinc-300 cursor-pointer">Cancel</button>
-          <button onClick={handleSave} className="flex-1 py-2.5 rounded-lg bg-brand-purple text-zinc-100 font-heading font-black text-sm hover:bg-violet-500 cursor-pointer transition-colors">Save Project</button>
-        </div>
-      </div>
+
+          {/* ── Image grid ── */}
+          {catWorks.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+              {catWorks.map((work, i) => (
+                <div key={work.id} className="group relative aspect-square rounded-xl overflow-hidden border border-zinc-800/60 bg-zinc-950">
+                  <img src={work.image} alt="" className="w-full h-full object-cover" />
+
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2">
+                    {/* Delete */}
+                    <button
+                      onClick={() => deleteWork(work.id)}
+                      className="p-2 rounded-lg bg-red-950/80 border border-red-900/60 text-red-400 hover:bg-red-900 cursor-pointer transition-all"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+
+                    {/* Reorder */}
+                    <div className="flex gap-1.5">
+                      <button
+                        onClick={() => moveWork(work.id, -1)}
+                        disabled={i === 0}
+                        className="p-1.5 rounded-lg bg-zinc-900/80 border border-zinc-700 text-zinc-400 hover:text-zinc-100 disabled:opacity-30 cursor-pointer transition-all"
+                        title="Move left"
+                      >
+                        <ChevronLeft className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => moveWork(work.id, 1)}
+                        disabled={i === catWorks.length - 1}
+                        className="p-1.5 rounded-lg bg-zinc-900/80 border border-zinc-700 text-zinc-400 hover:text-zinc-100 disabled:opacity-30 cursor-pointer transition-all"
+                        title="Move right"
+                      >
+                        <ChevronRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Index badge */}
+                  <span className="absolute top-1.5 left-1.5 w-5 h-5 rounded-md bg-black/70 flex items-center justify-center text-[9px] font-heading font-black text-zinc-400">
+                    {i + 1}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-16 text-center border border-dashed border-zinc-800/60 rounded-2xl">
+              <ImageIcon className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
+              <p className="text-zinc-600 font-heading font-bold text-xs uppercase tracking-widest">
+                No images in {activeCat} yet
+              </p>
+              <p className="text-zinc-700 text-[11px] font-heading mt-1">Upload images using the zone above</p>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }
@@ -360,9 +530,7 @@ function ServicesPanel({ data, setData }: { data: SiteData; setData: (d: SiteDat
           </div>
         ))}
       </div>
-      {editing && (
-        <ServiceModal service={editing} onSave={saveService} onClose={() => setEditing(null)} />
-      )}
+      {editing && <ServiceModal service={editing} onSave={saveService} onClose={() => setEditing(null)} />}
     </div>
   );
 }
@@ -385,12 +553,10 @@ function ServiceModal({ service, onSave, onClose }: { service: Service; onSave: 
             <textarea value={s.description} onChange={(e) => setS({ ...s, description: e.target.value })} rows={3} className="w-full px-3 py-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 text-sm font-heading focus:outline-none focus:border-brand-purple/50 resize-none" />
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex-1">
-              <FormField label="Accent Colour (hex)" value={s.accent} onChange={(v) => setS({ ...s, accent: v })} placeholder="#8b5cf6" />
-            </div>
+            <div className="flex-1"><FormField label="Accent Colour (hex)" value={s.accent} onChange={(v) => setS({ ...s, accent: v })} placeholder="#8b5cf6" /></div>
             <div className="mt-5 w-10 h-10 rounded-lg border border-zinc-800" style={{ background: s.accent }} />
           </div>
-          <FormField label="Toolkit (comma-separated)" value={skillStr} onChange={setSkillStr} placeholder="After Effects, Nuke" />
+          <FormField label="Toolkit (comma-separated)" value={skillStr} onChange={setSkillStr} placeholder="After Effects, Premiere Pro" />
         </div>
         <div className="flex gap-3 p-5 border-t border-zinc-800">
           <button onClick={onClose} className="flex-1 py-2.5 rounded-lg border border-zinc-800 text-zinc-500 font-heading font-bold text-sm cursor-pointer">Cancel</button>
@@ -490,55 +656,58 @@ function ToolkitPanel({ data, setData }: { data: SiteData; setData: (d: SiteData
 }
 
 /* ══════════════════════════════════════════════════
-   CATEGORIES PANEL
+   SOCIAL PANEL
 ══════════════════════════════════════════════════ */
-function CategoriesPanel({ data, setData }: { data: SiteData; setData: (d: SiteData) => void }) {
-  const [newCat, setNewCat] = useState("");
+function SocialPanel({ data, setData }: { data: SiteData; setData: (d: SiteData) => void }) {
+  const social = data.social ?? { behance: "", instagram: "", youtube: "", linkedin: "" };
 
-  function add() {
-    const v = newCat.trim();
-    if (!v || data.categories.includes(v)) return;
-    setData({ ...data, categories: [...data.categories, v] });
-    setNewCat("");
+  function update(field: keyof typeof social, val: string) {
+    setData({ ...data, social: { ...social, [field]: val } });
   }
+
+  const fields: { key: keyof typeof social; label: string; placeholder: string; color: string }[] = [
+    { key: "behance",   label: "Behance",   placeholder: "https://www.behance.net/yourprofile",  color: "text-[#1769ff]" },
+    { key: "instagram", label: "Instagram", placeholder: "https://www.instagram.com/yourhandle", color: "text-[#e1306c]" },
+    { key: "youtube",   label: "YouTube",   placeholder: "https://www.youtube.com/@yourchannel", color: "text-[#ff0000]" },
+    { key: "linkedin",  label: "LinkedIn",  placeholder: "https://www.linkedin.com/in/yourname", color: "text-[#0077b5]" },
+  ];
 
   return (
     <div>
-      <PanelHeader title="Portfolio Categories" count={data.categories.length} />
-      <p className="text-zinc-600 text-xs font-heading mt-2 mb-6">Categories appear as filter tabs on the Portfolio section.</p>
-      <div className="space-y-2 mb-6">
-        {data.categories.map((c) => (
-          <div key={c} className="flex items-center justify-between px-4 py-3 rounded-xl bg-zinc-950/60 border border-zinc-800/60">
-            <span className="font-heading font-bold text-sm text-zinc-200">{c}</span>
-            <button onClick={() => setData({ ...data, categories: data.categories.filter((x) => x !== c) })} className="text-zinc-700 hover:text-red-400 cursor-pointer transition-colors">
-              <Trash2 className="w-4 h-4" />
-            </button>
+      <PanelHeader title="Social Links" />
+      <p className="text-zinc-600 text-xs font-heading mt-2 mb-8">Links appear as icon buttons in the Contact section of your portfolio.</p>
+      <div className="space-y-5 max-w-lg">
+        {fields.map(({ key, label, placeholder, color }) => (
+          <div key={key} className="p-4 rounded-xl bg-zinc-950/60 border border-zinc-800/60">
+            <div className="flex items-center gap-3 mb-3">
+              <Globe2 className={`w-4 h-4 ${color}`} />
+              <span className={`font-heading font-black text-sm ${color}`}>{label}</span>
+              {social[key] && (
+                <a href={social[key]} target="_blank" rel="noopener noreferrer" className="ml-auto flex items-center gap-1 text-[10px] font-heading text-zinc-600 hover:text-zinc-300 transition-colors">
+                  Preview <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
+            </div>
+            <input
+              value={social[key]}
+              onChange={(e) => update(key, e.target.value)}
+              placeholder={placeholder}
+              className="w-full px-3 py-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-200 placeholder-zinc-700 text-sm font-heading focus:outline-none focus:border-brand-purple/50 transition-colors"
+            />
           </div>
         ))}
-      </div>
-      <div className="flex gap-3">
-        <input
-          value={newCat}
-          onChange={(e) => setNewCat(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && add()}
-          placeholder="Add new category..."
-          className="flex-1 px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800 text-zinc-200 placeholder-zinc-700 text-sm font-heading focus:outline-none focus:border-brand-cyan/50"
-        />
-        <button onClick={add} className="px-4 py-2.5 rounded-xl bg-brand-cyan/20 border border-brand-cyan/30 text-brand-cyan font-heading font-black text-sm hover:bg-brand-cyan/30 cursor-pointer transition-all">
-          <Plus className="w-4 h-4" />
-        </button>
       </div>
     </div>
   );
 }
 
-/* ── Shared UI pieces ─────────────────────────────── */
-function PanelHeader({ title, count, onAdd }: { title: string; count: number; onAdd?: () => void }) {
+/* ── Shared UI ────────────────────────────────────── */
+function PanelHeader({ title, count, onAdd }: { title: string; count?: number; onAdd?: () => void }) {
   return (
     <div className="flex items-center justify-between">
       <div>
         <h2 className="font-display font-black text-xl text-zinc-100 tracking-tight">{title}</h2>
-        <p className="text-zinc-600 text-xs font-heading mt-0.5">{count} item{count !== 1 ? "s" : ""}</p>
+        {count !== undefined && <p className="text-zinc-600 text-xs font-heading mt-0.5">{count} item{count !== 1 ? "s" : ""}</p>}
       </div>
       {onAdd && (
         <button onClick={onAdd} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-brand-purple/20 border border-brand-purple/30 text-brand-purple font-heading font-black text-xs uppercase tracking-wider hover:bg-brand-purple/30 cursor-pointer transition-all">

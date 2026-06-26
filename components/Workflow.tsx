@@ -41,8 +41,8 @@ const DaVinciLogo = () => (
 const steps = [
   {
     num: "01",
-    title: "CREATIVE EDITING",
-    description: "Assembling video timelines, pacing cuts, and speed ramping. Transforming raw footage into highly energetic, cohesive, and scroll-stopping digital content tailored for marketing and video reel campaigns.",
+    title: "CREATIVE DESIGN",
+    description: "Dedicated to delivering innovative, high-quality designs that strengthen brand identity and engage audiences. Utilizing tools like Adobe Photoshop, and Illustrator to craft visually compelling content.",
     logo: <PremiereLogo />,
     color: "from-purple-500 to-pink-500",
     glow: "shadow-[0_0_20px_rgba(139,92,246,0.15)]",
@@ -63,22 +63,14 @@ const steps = [
     color: "from-rose-500 to-pink-500",
     glow: "shadow-[0_0_20px_rgba(244,63,94,0.15)]",
   },
-  {
-    num: "04",
-    title: "SOUND DESIGN",
-    description: "Designing high-fidelity video audio tracks. Layering Foley sound effects, ambient tracks, voice enhancements, and transitional audio sweeps to maximize viewer immersion.",
-    logo: <PremiereLogo />,
-    color: "from-purple-500 to-cyan-500",
-    glow: "shadow-[0_0_20px_rgba(139,92,246,0.15)]",
+    {
+    num: "03",
+    title: "VIDEO EDITING",
+    description: "Assembling video timelines, pacing cuts, and speed ramping. Transforming raw footage into highly energetic, cohesive, and scroll-stopping digital content tailored for marketing and video reel campaigns.",
+    logo: <CapCutLogo />,
+    color: "from-rose-500 to-pink-500",
+    glow: "shadow-[0_0_20px_rgba(244,63,94,0.15)]",
   },
-  {
-    num: "05",
-    title: "COLOR GRADING",
-    description: "DaVinci Resolve color balancing, RAW footage correction, and custom LUT mapping. Infusing distinct cinematic tones and colors to establish the brand's aesthetic identity.",
-    logo: <DaVinciLogo />,
-    color: "from-blue-500 to-cyan-500",
-    glow: "shadow-[0_0_20px_rgba(6,182,212,0.15)]",
-  }
 ];
 
 export default function Workflow() {

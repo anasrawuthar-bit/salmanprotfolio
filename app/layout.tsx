@@ -26,8 +26,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Salman | VFX Artist, Cinematic Video Editor & Designer",
-  description: "Explore the premium portfolio of Salman, professional designer, video editor, and VFX artist. Browse cinematic showreels, before/after compositing comparisons, and creative designs.",
+  title: "Salman | Cinematic Video Editor & Designer",
+  description: "Explore the premium portfolio of Salman, professional designer, video editor. Browse cinematic showreels, motion graphics, high-impact video edits, and creative designs.",
 };
 
 export default function RootLayout({

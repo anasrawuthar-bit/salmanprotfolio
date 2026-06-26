@@ -25,7 +25,7 @@ function Counter({ target, suffix = "", duration = 1600 }: { target: number; suf
 }
 
 const stats = [
-  { value: 3,  suffix: "+", label: "Years Experience",     desc: "In VFX, video production & design",          icon: Award,       color: "text-brand-purple", glow: "rgba(139,92,246,0.08)" },
+  { value: 3,  suffix: "+", label: "Years Experience",     desc: "video production & design",          icon: Award,       color: "text-brand-purple", glow: "rgba(139,92,246,0.08)" },
   { value: 100, suffix: "+", label: "Projects Completed",   desc: "Commercials, campaigns & brandings",          icon: CheckCircle, color: "text-brand-cyan",   glow: "rgba(6,182,212,0.08)" },
   { value: 50,  suffix: "+", label: "Happy Agency Clients", desc: "Collaborations with directors & brands",      icon: Users,       color: "text-brand-cyan",   glow: "rgba(6,182,212,0.08)" },
 ];

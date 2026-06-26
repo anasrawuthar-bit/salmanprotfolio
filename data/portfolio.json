@@ -1,115 +1,120 @@
 {
-  "portfolio": [
-    {
-      "id": 1,
-      "title": "Cyberpunk Alley Composite",
-      "category": "VFX & Video",
-      "client": "Cinematic Lab",
-      "software": [
-        "Nuke",
-        "After Effects",
-        "Blender"
-      ],
-      "videoUrl": "https://player.vimeo.com/video/853401569",
-      "thumbnail": "https://images.unsplash.com/photo-1578894381163-e72c17f2d45f?auto=format&fit=crop&q=80&w=800",
-      "description": "Full photorealistic environment extension. Replaced a basic urban alley with a glowing, rainy neon sci-fi alleyway, including CG hover cars and hologram projections."
-    },
-    {
-      "id": 2,
-      "title": "Apex Legends CGI Intro",
-      "category": "VFX & Video",
-      "client": "Gaming Guild",
-      "software": [
-        "Cinema 4D",
-        "After Effects",
-        "Octane Render"
-      ],
-      "videoUrl": "https://player.vimeo.com/video/178720188",
-      "thumbnail": "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=800",
-      "description": "Action-packed CGI opening sequence with complex particle dynamics, volumetric smoke, and fluid character animations integrated with graphic titles."
-    },
-    {
-      "id": 3,
-      "title": "Social Media Ad Campaign",
-      "category": "VFX & Video",
-      "client": "FitLife Apparel",
-      "software": [
-        "Premiere Pro",
-        "After Effects",
-        "DaVinci Resolve"
-      ],
-      "videoUrl": "https://player.vimeo.com/video/853401569",
-      "thumbnail": "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?auto=format&fit=crop&q=80&w=800",
-      "description": "High-impact social media video campaign optimized for Instagram Reels and TikTok. Engineered hyper-fast cuts, custom sound FX sweeps, and bold typography overlays."
-    },
-    {
-      "id": 4,
-      "title": "Nike Commercial Grade",
-      "category": "VFX & Video",
-      "client": "Nike Run",
-      "software": [
-        "DaVinci Resolve",
-        "Premiere Pro"
-      ],
-      "videoUrl": "https://player.vimeo.com/video/853401569",
-      "thumbnail": "https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?auto=format&fit=crop&q=80&w=800",
-      "description": "High-contrast commercial edit. Directed the dramatic color grading to emphasize muscle definition, texture of the sportswear, and sunrise lighting highlights."
-    },
-    {
-      "id": 7,
-      "title": "Synthwave Album Cover",
-      "category": "Design",
-      "client": "RetroBeats Music",
-      "software": [
-        "Photoshop",
-        "Blender"
-      ],
-      "videoUrl": "",
-      "thumbnail": "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=800",
-      "description": "80s retro-futuristic cover art featuring a grid-pattern sunset, chrome lettering, and a detailed 3D wireframe sports car styled in Photoshop."
-    },
-    {
-      "id": 8,
-      "title": "Aura Perfume Campaign",
-      "category": "Design",
-      "client": "Aura Fragrance",
-      "software": [
-        "Blender",
-        "Photoshop",
-        "Illustrator"
-      ],
-      "videoUrl": "",
-      "thumbnail": "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&q=80&w=800",
-      "description": "Visual identity campaign and package logo branding. Drafted minimal product layouts and rendered 3D product shots in atmospheric settings."
-    }
-  ],
-  "categories": [
-    "VFX & Video",
-    "Design"
-  ],
+  "gallery": {
+    "categories": [
+      "Designs",
+      "Illustration",
+      "Logo Branding"
+    ],
+    "works": [
+      {
+        "id": 1782485856806,
+        "category": "Logo Branding",
+        "image": "/uploads/1782485856794-ChatGPT_Image_Jun_13__2026__09_38_53_PM.png"
+      },
+      {
+        "id": 1782485856847,
+        "category": "Logo Branding",
+        "image": "/uploads/1782485856836-ChatGPT_Image_Jun_13__2026__09_38_07_PM.png"
+      },
+      {
+        "id": 1782485888642,
+        "category": "Logo Branding",
+        "image": "/uploads/1782485888599-peter-thomas-KyQYGNx3YFw-unsplash.jpg"
+      },
+      {
+        "id": 1782485888730,
+        "category": "Logo Branding",
+        "image": "/uploads/1782485888702-musa-ortac-m9Mg60saOeA-unsplash.jpg"
+      },
+      {
+        "id": 1782486026285,
+        "category": "Logo Branding",
+        "image": "/uploads/1782486025842-peter-thomas-KyQYGNx3YFw-unsplash.jpg"
+      },
+      {
+        "id": 1782486026800,
+        "category": "Logo Branding",
+        "image": "/uploads/1782486026333-musa-ortac-m9Mg60saOeA-unsplash.jpg"
+      },
+      {
+        "id": 1782486036587,
+        "category": "Logo Branding",
+        "image": "/uploads/1782486035513-ChatGPT_Image_Jun_13__2026__09_38_53_PM.png"
+      },
+      {
+        "id": 1782486037857,
+        "category": "Logo Branding",
+        "image": "/uploads/1782486036618-ChatGPT_Image_Jun_13__2026__09_38_07_PM.png"
+      },
+      {
+        "id": 1782488116129,
+        "category": "Designs",
+        "image": "/uploads/1782488116125-download-1.jpg"
+      },
+      {
+        "id": 1782488116100,
+        "category": "Designs",
+        "image": "/uploads/1782488116091-Screenshot_2026-06-25_at_4.14.06_PM.png"
+      },
+      {
+        "id": 1782488116151,
+        "category": "Designs",
+        "image": "/uploads/1782488116146-download.jpg"
+      },
+      {
+        "id": 1782488111819,
+        "category": "Illustration",
+        "image": "/uploads/1782488111810-IMG-20260620-WA0009.png"
+      },
+      {
+        "id": 1782488111716,
+        "category": "Illustration",
+        "image": "/uploads/1782488111702-Screenshot_2026-06-25_at_4.14.06_PM.png"
+      },
+      {
+        "id": 1782488111754,
+        "category": "Illustration",
+        "image": "/uploads/1782488111749-download-1.jpg"
+      },
+      {
+        "id": 1782488111767,
+        "category": "Illustration",
+        "image": "/uploads/1782488111763-download.jpg"
+      },
+      {
+        "id": 1782488111800,
+        "category": "Illustration",
+        "image": "/uploads/1782488111787-Screenshot_2026-06-14_at_3.59.09_PM.png"
+      },
+      {
+        "id": 1782488111856,
+        "category": "Illustration",
+        "image": "/uploads/1782488111839-Screenshot_2026-06-19_at_5.25.09_PM.png"
+      }
+    ]
+  },
   "services": [
     {
       "id": 1,
-      "title": "VFX & Video Production",
-      "description": "Photorealistic CGI integration, green-screen keying, environment extensions, rotoscoping, and full RED/ARRI camera workflows.",
+      "title": "Video Production & Editing",
+      "description": "High-impact video editing, professional production, cinematic color grading, sound design, and motion graphics designed to captivate your audience.",
       "accent": "#8b5cf6",
       "skills": [
-        "Nuke",
-        "Blender",
-        "After Effects",
-        "Red/Arri"
+        "Premiere Pro",
+        "DaVinci Resolve",
+        "After Effects"
       ]
     },
     {
       "id": 2,
       "title": "Social Media Campaigns",
-      "description": "High-octane pacing, colour grading, sound design, and narrative edits optimised for TikTok, Instagram Reels, and YouTube Shorts.",
+      "description": "High-octane pacing, color grading, sound design, and narrative edits optimized for TikTok, Instagram Reels, and YouTube Shorts.",
       "accent": "#06b6d4",
       "skills": [
         "Premiere Pro",
-        "DaVinci Resolve",
         "CapCut Pro",
-        "Strategy"
+        "After Effects",
+        "Photoshop"
       ]
     },
     {
@@ -120,8 +125,7 @@
       "skills": [
         "Illustrator",
         "Photoshop",
-        "After Effects",
-        "Strategy"
+        "CorelDRAW"
       ]
     }
   ],
@@ -129,7 +133,7 @@
     {
       "id": 1,
       "name": "CREATIVE DESIGN",
-      "pct": 95
+      "pct": 100
     },
     {
       "id": 2,
@@ -144,14 +148,14 @@
     {
       "id": 4,
       "name": "SOCIAL MEDIA HANDLING",
-      "pct": 88
+      "pct": 100
     }
   ],
   "toolkit": [
     {
       "id": 1,
       "name": "After Effects",
-      "cat": "VFX / Motion",
+      "cat": "Motion Graphics",
       "level": "Expert"
     },
     {
@@ -165,18 +169,6 @@
       "name": "DaVinci Resolve",
       "cat": "Color / Grade",
       "level": "Expert"
-    },
-    {
-      "id": 4,
-      "name": "Nuke",
-      "cat": "Compositing",
-      "level": "Advanced"
-    },
-    {
-      "id": 5,
-      "name": "Blender",
-      "cat": "3D Modelling",
-      "level": "Intermediate"
     },
     {
       "id": 6,
@@ -202,5 +194,11 @@
       "cat": "Print / Layout",
       "level": "Intermediate"
     }
-  ]
+  ],
+  "social": {
+    "behance": "https://www.behance.net/muhammed-salman",
+    "instagram": "https://www.instagram.com/_salman._z_?utm_source=qr&igsh=Y2lmMG0xMmFuNDB2",
+    "youtube": "",
+    "linkedin": ""
+  }
 }

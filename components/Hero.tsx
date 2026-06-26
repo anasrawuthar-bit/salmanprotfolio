@@ -91,7 +91,7 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#070709] py-24 px-4 md:px-8">
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-[#070709] py-24 px-4 md:px-8 w-full max-w-full">
       {/* Particle canvas */}
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none opacity-50 z-0" />
 
@@ -99,7 +99,7 @@ export default function Hero() {
       <div className="absolute top-1/4 left-1/4 w-[600px] h-[600px] rounded-full bg-brand-purple/8 blur-[160px] pointer-events-none z-0 animate-float-pulse" />
       <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] rounded-full bg-brand-cyan/8 blur-[160px] pointer-events-none z-0" style={{ animationDelay: "2.5s" }} />
 
-      <div className="relative max-w-6xl mx-auto text-center z-10 flex flex-col items-center">
+      <div className="relative w-full max-w-6xl mx-auto text-center z-10 flex flex-col items-center">
 
         {/* ── Availability badge ── */}
         <motion.div
@@ -120,9 +120,7 @@ export default function Hero() {
           <motion.h1
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            className="text-[clamp
-             font-display font-black tracking-tighter leading-none text-zinc-100 select-none"
+            className="text-[clamp(1.8rem,8.5vw,9rem)] font-display font-black tracking-tight md:tracking-tighter leading-none text-zinc-100 select-none"
           >
             MOHAMMED
           </motion.h1>
@@ -132,7 +130,7 @@ export default function Hero() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.12, ease: [0.16, 1, 0.3, 1] }}
-            className="text-[clamp(1.8rem,8.5vw,9rem)] font-display font-black tracking-tighter leading-none select-none bg-gradient-to-r from-brand-purple via-brand-cyan to-brand-amber bg-clip-text text-transparent animate-gradient-text text-glow-purple"
+            className="text-[clamp(1.8rem,8.5vw,9rem)] font-display font-black tracking-tight md:tracking-tighter leading-none select-none bg-gradient-to-r from-brand-purple via-brand-cyan to-brand-amber bg-clip-text text-transparent animate-gradient-text text-glow-purple"
           >
             SALMAN
           </motion.h1>
@@ -145,10 +143,10 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.35 }}
           className="flex flex-wrap gap-x-5 gap-y-2 justify-center text-[11px] md:text-xs font-heading font-black uppercase tracking-widest text-zinc-500 mb-6"
         >
-          {["Creative Design", "Video Editing", "VFX Artist", "Campaigns"].map((t, i) => (
+          {["Creative Design", "Video Editing", "Social Media Campaign Creative"].map((t, i, arr) => (
             <span key={t} className="flex items-center gap-5">
               {t}
-              {i < 3 && <span className="text-brand-purple/60">/</span>}
+              {i < arr.length - 1 && <span className="text-brand-purple/60">/</span>}
             </span>
           ))}
         </motion.div>
@@ -160,7 +158,7 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.45 }}
           className="max-w-xl text-zinc-400 text-sm md:text-base leading-relaxed mb-12 px-4 font-sans"
         >
-          Crafting high-impact, scroll-stopping videos, logo branding, and photorealistic VFX. Transforming raw footage into compelling digital narratives.
+          Crafting high-impact, scroll-stopping videos, logo branding, and digital design. Transforming raw footage and creative ideas into compelling brand narratives.
         </motion.p>
 
         {/* ── CTA buttons ── */}
@@ -170,39 +168,41 @@ export default function Hero() {
           transition={{ duration: 0.6, delay: 0.55 }}
           className="flex flex-col sm:flex-row gap-4 justify-center items-center"
         >
-          <button
-            onClick={() => setIsOpen(true)}
-            data-cursor="PLAY"
-            className="group relative flex items-center gap-3 px-8 py-4 rounded-full bg-brand-purple text-zinc-100 font-heading font-black text-sm overflow-hidden shadow-[0_0_35px_rgba(139,92,246,0.35)] hover:shadow-[0_0_50px_rgba(139,92,246,0.55)] transition-all duration-300 cursor-pointer w-full sm:w-auto"
-          >
-            <span className="absolute inset-0 w-0 bg-gradient-to-r from-brand-cyan to-brand-purple opacity-60 group-hover:w-full transition-all duration-500 ease-out" />
-            <span className="relative flex items-center gap-3">
-              <Play className="w-4 h-4 fill-current" />
-              Watch Showreel
-            </span>
-          </button>
-
           <a
             href="#portfolio"
             data-cursor="VIEW"
-            className="group flex items-center gap-2 px-8 py-4 rounded-full glass-panel text-zinc-300 font-heading font-black text-sm hover:text-white transition-all duration-300 w-full sm:w-auto justify-center"
+            className="group relative flex items-center gap-2.5 px-8 py-4 rounded-full bg-zinc-950/40 border border-zinc-800 hover:border-brand-purple/50 text-zinc-300 hover:text-white font-heading font-black text-sm transition-all duration-300 overflow-hidden shadow-[0_0_30px_rgba(0,0,0,0.6)] hover:shadow-[0_0_35px_rgba(139,92,246,0.15)] cursor-pointer w-full sm:w-auto justify-center"
           >
+            <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-brand-purple/10 to-brand-cyan/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
             Explore Portfolio
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+            <ArrowRight className="w-4 h-4 text-zinc-400 group-hover:text-zinc-100 group-hover:translate-x-1.5 transition-all duration-300" />
           </a>
         </motion.div>
-
-        {/* ── Scroll indicator ── */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 pointer-events-none select-none"
-        >
-          <div className="w-[1px] h-12 bg-gradient-to-b from-transparent via-zinc-600 to-transparent" />
-          <span className="text-[9px] font-heading font-black tracking-[0.3em] text-zinc-600 uppercase">Scroll</span>
-        </motion.div>
       </div>
+
+      {/* ── Scroll indicator (Placed at absolute bottom of viewport section) ── */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.8 }}
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 pointer-events-none select-none z-10"
+      >
+        <div className="w-5 h-8 rounded-full border border-zinc-700/80 flex justify-center p-1.5 bg-[#070709]/60 backdrop-blur-xs">
+          <motion.div
+            animate={{
+              y: [0, 8, 0],
+              opacity: [1, 0.4, 1]
+            }}
+            transition={{
+              duration: 1.6,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+            className="w-1 h-1.5 rounded-full bg-brand-cyan"
+          />
+        </div>
+        <span className="text-[9px] font-heading font-black tracking-[0.3em] text-zinc-500 uppercase">Scroll</span>
+      </motion.div>
 
       {/* ── Showreel modal ── */}
       <AnimatePresence>

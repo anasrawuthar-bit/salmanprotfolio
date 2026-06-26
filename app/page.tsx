@@ -3,7 +3,6 @@ import Marquee from "@/components/Marquee";
 import Services from "@/components/Services";
 import Workflow from "@/components/Workflow";
 import Portfolio from "@/components/Portfolio";
-// import BeforeAfter from "@/components/BeforeAfter";
 import Stats from "@/components/Stats";
 // import Testimonials from "@/components/Testimonials";
 import About from "@/components/About";
@@ -17,7 +16,6 @@ export default function Home() {
       <Services />
       <Workflow />
       <Portfolio />
-      {/* <BeforeAfter /> */}
       <Stats />
       {/* <Testimonials /> */}
       <About />

@@ -1,39 +1,58 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Wand2, Scissors, Layers } from "lucide-react";
 
-const services = [
+const defaultServices = [
   {
-    title: "VFX & Video Production",
-    description: "Photorealistic CGI integration, green-screen keying, environment extensions, rotoscoping, and full RED/ARRI camera workflows.",
-    icon: Wand2,
+    id: 1,
+    title: "Video Production & Editing",
+    description: "High-impact video editing, professional production, cinematic color grading, sound design, and motion graphics designed to captivate your audience.",
     accent: "#8b5cf6",
-    topBorder: "bg-gradient-to-r from-brand-purple via-violet-400 to-transparent",
-    glow: "group-hover:shadow-[0_8px_40px_rgba(139,92,246,0.18)]",
-    skills: ["Nuke", "Blender", "After Effects", "Red/Arri"],
+    skills: ["Premiere Pro", "DaVinci Resolve", "After Effects"],
   },
   {
+    id: 2,
     title: "Social Media Campaigns",
-    description: "High-octane pacing, colour grading, sound design, and narrative edits optimised for TikTok, Instagram Reels, and YouTube Shorts.",
-    icon: Scissors,
+    description: "High-octane pacing, color grading, sound design, and narrative edits optimized for TikTok, Instagram Reels, and YouTube Shorts.",
     accent: "#06b6d4",
-    topBorder: "bg-gradient-to-r from-brand-cyan via-sky-400 to-transparent",
-    glow: "group-hover:shadow-[0_8px_40px_rgba(6,182,212,0.18)]",
-    skills: ["Premiere Pro", "DaVinci Resolve", "CapCut Pro", "Strategy"],
+    skills: ["Premiere Pro", "CapCut Pro", "After Effects", "Photoshop"],
   },
   {
+    id: 3,
     title: "Logo Branding & Design",
     description: "Creative visual identities, vector logos, corporate style guides, typography animations, and high-converting marketing graphics.",
-    icon: Layers,
     accent: "#f97316",
-    topBorder: "bg-gradient-to-r from-brand-amber via-amber-400 to-transparent",
-    glow: "group-hover:shadow-[0_8px_40px_rgba(249,115,22,0.18)]",
-    skills: ["Illustrator", "Photoshop", "After Effects", "Strategy"],
+    skills: ["Illustrator", "Photoshop", "CorelDRAW"],
   },
 ];
 
+const iconMap: Record<number, React.FC<any>> = {
+  1: Wand2,
+  2: Scissors,
+  3: Layers,
+};
+
 export default function Services() {
+  const [servicesList, setServicesList] = useState<any[]>([]);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
+
+  useEffect(() => {
+    fetch("/api/data")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.services && d.services.length > 0) {
+          setServicesList(d.services);
+        } else {
+          setServicesList(defaultServices);
+        }
+      })
+      .catch(() => {
+        setServicesList(defaultServices);
+      });
+  }, []);
+
   return (
     <section id="services" className="relative py-32 bg-[#070709] px-4 md:px-8 border-t border-dark-border overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-brand-purple/6 blur-[140px] pointer-events-none" />
@@ -62,44 +81,65 @@ export default function Services() {
 
         {/* Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {services.map((s, i) => (
-            <motion.div
-              key={s.title}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ delay: i * 0.12, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              whileHover={{ y: -10 }}
-              className={`group relative rounded-2xl glass-panel p-8 flex flex-col overflow-hidden transition-all duration-500 ${s.glow}`}
-            >
-              {/* Coloured top beam */}
-              <div className={`absolute top-0 left-0 w-full h-[2px] ${s.topBorder} opacity-25 group-hover:opacity-100 transition-opacity duration-500`} />
+          {servicesList.map((s, i) => {
+            const IconComponent = iconMap[s.id] || Layers;
+            const accentColor = s.accent || "#8b5cf6";
+            const topBorderBg = `linear-gradient(to right, ${accentColor} 0%, ${accentColor}80 40%, transparent 100%)`;
 
-              {/* Icon */}
-              <div className="mb-6 w-11 h-11 rounded-xl bg-zinc-950/70 border border-zinc-800/60 flex items-center justify-center text-zinc-400 group-hover:text-zinc-100 group-hover:border-zinc-700 transition-all duration-300">
-                <s.icon className="w-5 h-5" />
-              </div>
+            return (
+              <motion.div
+                key={s.id || s.title}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ delay: i * 0.12, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                whileHover={{ y: -10 }}
+                onMouseEnter={() => setHoveredIdx(i)}
+                onMouseLeave={() => setHoveredIdx(null)}
+                style={{
+                  borderColor: hoveredIdx === i ? `${accentColor}50` : "rgba(39, 39, 42, 0.4)",
+                  boxShadow: hoveredIdx === i ? `0 8px 40px ${accentColor}18` : "none",
+                }}
+                className="group relative rounded-2xl glass-panel p-8 flex flex-col overflow-hidden transition-all duration-500 border"
+              >
+                {/* Coloured top beam */}
+                <div
+                  className="absolute top-0 left-0 w-full h-[2px] opacity-25 group-hover:opacity-100 transition-opacity duration-500"
+                  style={{ background: topBorderBg }}
+                />
 
-              <h3 className="text-xl font-heading font-black text-zinc-100 mb-3 tracking-tight leading-tight">
-                {s.title}
-              </h3>
-              <p className="text-zinc-400 text-sm leading-relaxed mb-8 flex-grow font-sans">
-                {s.description}
-              </p>
-
-              {/* Toolkit tags */}
-              <div className="border-t border-zinc-800/40 pt-5">
-                <p className="text-[9px] font-heading font-black uppercase tracking-[0.2em] text-zinc-600 mb-3">Toolkit</p>
-                <div className="flex flex-wrap gap-2">
-                  {s.skills.map((sk) => (
-                    <span key={sk} className="px-2.5 py-1 rounded-md bg-zinc-950/60 border border-zinc-800/50 text-[10px] font-heading font-bold text-zinc-400">
-                      {sk}
-                    </span>
-                  ))}
+                {/* Icon */}
+                <div
+                  className="mb-6 w-11 h-11 rounded-xl bg-zinc-950/70 border flex items-center justify-center transition-all duration-300"
+                  style={{
+                    color: hoveredIdx === i ? accentColor : "#71717a",
+                    borderColor: hoveredIdx === i ? `${accentColor}60` : "rgba(39, 39, 42, 0.4)",
+                  }}
+                >
+                  <IconComponent className="w-5 h-5" />
                 </div>
-              </div>
-            </motion.div>
-          ))}
+
+                <h3 className="text-xl font-heading font-black text-zinc-100 mb-3 tracking-tight leading-tight">
+                  {s.title}
+                </h3>
+                <p className="text-zinc-400 text-sm leading-relaxed mb-8 flex-grow font-sans">
+                  {s.description}
+                </p>
+
+                {/* Toolkit tags */}
+                <div className="border-t border-zinc-800/40 pt-5">
+                  <p className="text-[9px] font-heading font-black uppercase tracking-[0.2em] text-zinc-600 mb-3">Toolkit</p>
+                  <div className="flex flex-wrap gap-2">
+                    {s.skills && s.skills.map((sk: string) => (
+                      <span key={sk} className="px-2.5 py-1 rounded-md bg-zinc-950/60 border border-zinc-800/50 text-[10px] font-heading font-bold text-zinc-400">
+                        {sk}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
