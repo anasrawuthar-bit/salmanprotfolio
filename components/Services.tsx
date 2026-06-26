@@ -35,7 +35,7 @@ const iconMap: Record<number, React.FC<any>> = {
 };
 
 export default function Services() {
-  const [servicesList, setServicesList] = useState<any[]>([]);
+  const [servicesList, setServicesList] = useState<any[]>(defaultServices);
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   useEffect(() => {

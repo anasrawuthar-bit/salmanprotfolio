@@ -113,8 +113,8 @@ const skillsGradients = [
 ];
 
 export default function About() {
-  const [skillsList, setSkillsList] = useState<any[]>([]);
-  const [softwaresList, setSoftwaresList] = useState<any[]>([]);
+  const [skillsList, setSkillsList] = useState<any[]>(defaultSkills);
+  const [softwaresList, setSoftwaresList] = useState<any[]>(defaultSoftwares);
 
   useEffect(() => {
     fetch("/api/data")
