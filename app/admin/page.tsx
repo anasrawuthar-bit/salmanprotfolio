@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   LogOut, Plus, Trash2, Save, Film, Briefcase, Wrench,
   BarChart2, Lock, Eye, EyeOff, Pencil, X, Check,
@@ -9,8 +10,15 @@ import {
 } from "lucide-react";
 
 /* ─── Types ──────────────────────────────────────── */
-interface GalleryWork { id: number; category: string; image: string; }
-interface GalleryData  { categories: string[]; works: GalleryWork[]; }
+interface GalleryProject {
+  id: number;
+  category: string;
+  companyName: string;
+  description: string;
+  coverImage: string;
+  images: string[];
+}
+interface GalleryData  { categories: string[]; projects: GalleryProject[]; }
 interface Service      { id: number; title: string; description: string; accent: string; skills: string[]; }
 interface Skill        { id: number; name: string; pct: number; }
 interface ToolItem     { id: number; name: string; cat: string; level: string; }
@@ -219,8 +227,36 @@ export default function AdminPage() {
 
 /* ── Normalise legacy data shape ─────────────────── */
 function normalise(d: Record<string, unknown>): SiteData {
+  const rawGallery = (d.gallery as any) ?? { categories: [], projects: [], works: [] };
+  
+  // Migrate legacy 'works' array if it exists and 'projects' doesn't
+  let projectsList: GalleryProject[] = [];
+  if (Array.isArray(rawGallery.projects)) {
+    projectsList = rawGallery.projects;
+  } else if (Array.isArray(rawGallery.works)) {
+    // Basic automatic grouping of old flat works into showcase projects
+    const grouped: Record<string, string[]> = {};
+    rawGallery.works.forEach((w: any) => {
+      if (w.category && w.image) {
+        if (!grouped[w.category]) grouped[w.category] = [];
+        grouped[w.category].push(w.image);
+      }
+    });
+    projectsList = Object.keys(grouped).map((cat, idx) => ({
+      id: 1000 + idx,
+      category: cat,
+      companyName: `${cat} Portfolio Showcase`,
+      description: `A showcase of my recent client work and conceptual layouts for ${cat}.`,
+      coverImage: grouped[cat][0] ?? "",
+      images: grouped[cat]
+    }));
+  }
+
   return {
-    gallery:  (d.gallery as GalleryData) ?? { categories: [], works: [] },
+    gallery: {
+      categories: rawGallery.categories ?? [],
+      projects: projectsList
+    },
     services: (d.services as Service[])  ?? [],
     skills:   (d.skills   as Skill[])    ?? [],
     toolkit:  (d.toolkit  as ToolItem[]) ?? [],
@@ -234,12 +270,22 @@ function normalise(d: Record<string, unknown>): SiteData {
 type UploadItem = { name: string; status: "uploading" | "done" | "error"; };
 
 function GalleryPanel({ data, setData }: { data: SiteData; setData: (d: SiteData) => void }) {
-  const gallery = data.gallery ?? { categories: [], works: [] };
+  const gallery = data.gallery ?? { categories: [], projects: [] };
   const [activeCat, setActiveCat]     = useState<string>(gallery.categories[0] ?? "");
   const [newCat, setNewCat]           = useState("");
+  
+  // Modal editor states for single project
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProjectId, setEditingProjectId] = useState<number | null>(null);
+  const [companyName, setCompanyName] = useState("");
+  const [description, setDescription] = useState("");
+  const [coverImage, setCoverImage]   = useState("");
+  const [images, setImages]           = useState<string[]>([]);
   const [uploads, setUploads]         = useState<UploadItem[]>([]);
   const [dragging, setDragging]       = useState(false);
-  const fileRef                       = useRef<HTMLInputElement>(null);
+  
+  const coverFileRef                  = useRef<HTMLInputElement>(null);
+  const galleryFilesRef               = useRef<HTMLInputElement>(null);
 
   /* keep activeCat in sync when categories change */
   useEffect(() => {
@@ -248,97 +294,225 @@ function GalleryPanel({ data, setData }: { data: SiteData; setData: (d: SiteData
     }
   }, [gallery.categories]);
 
-  const catWorks = gallery.works.filter((w) => w.category === activeCat);
+  const catProjects = (gallery.projects ?? []).filter((p) => p.category === activeCat);
 
-  /* ── Upload multiple files ── */
-  async function handleFiles(files: FileList | File[]) {
+  // Add category
+  function addCategory() {
+    const v = newCat.trim();
+    if (!v || gallery.categories.includes(v)) return;
+    const updated = { ...gallery, categories: [...gallery.categories, v], projects: gallery.projects ?? [] };
+    setData({ ...data, gallery: updated });
+    setActiveCat(v);
+    setNewCat("");
+  }
+
+  // Delete category
+  function deleteCategory(cat: string) {
+    const projectsList = gallery.projects ?? [];
+    const count = projectsList.filter((p) => p.category === cat).length;
+    const msg = count > 0
+      ? `Delete "${cat}" and its ${count} project${count > 1 ? "s" : ""}? This cannot be undone.`
+      : `Delete category "${cat}"?`;
+    if (!confirm(msg)) return;
+    const categories = gallery.categories.filter((c) => c !== cat);
+    const projects   = projectsList.filter((p) => p.category !== cat);
+    setData({ ...data, gallery: { categories, projects } });
+    setActiveCat(categories[0] ?? "");
+  }
+
+  // Open modal to add a project
+  function handleAddProject() {
+    setEditingProjectId(null);
+    setCompanyName("");
+    setDescription("");
+    setCoverImage("");
+    setImages([]);
+    setUploads([]);
+    setIsModalOpen(true);
+  }
+
+  // Open modal to edit a project
+  function handleEditProject(proj: GalleryProject) {
+    setEditingProjectId(proj.id);
+    setCompanyName(proj.companyName);
+    setDescription(proj.description ?? "");
+    setCoverImage(proj.coverImage ?? "");
+    setImages(proj.images ?? []);
+    setUploads([]);
+    setIsModalOpen(true);
+  }
+
+  // Delete project
+  function deleteProject(id: number) {
+    if (!confirm("Are you sure you want to delete this project? This cannot be undone.")) return;
+    setData({
+      ...data,
+      gallery: {
+        ...gallery,
+        projects: (gallery.projects ?? []).filter((p) => p.id !== id)
+      }
+    });
+  }
+
+  // Move project up/down (reordering)
+  function moveProject(id: number, dir: -1 | 1) {
+    const projList = (gallery.projects ?? []).filter((p) => p.category === activeCat);
+    const others   = (gallery.projects ?? []).filter((p) => p.category !== activeCat);
+    const idx      = projList.findIndex((p) => p.id === id);
+    if (idx === -1) return;
+    const newIdx = idx + dir;
+    if (newIdx < 0 || newIdx >= projList.length) return;
+    const next = [...projList];
+    [next[idx], next[newIdx]] = [next[newIdx], next[idx]];
+    setData({
+      ...data,
+      gallery: {
+        ...gallery,
+        projects: [...others, ...next]
+      }
+    });
+  }
+
+  // Handle Cover Image Upload
+  async function handleCoverUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd, credentials: "same-origin" });
+      const json = await res.json();
+      if (res.ok) {
+        setCoverImage(json.url);
+      } else {
+        alert(`Failed to upload cover: ${json.error}`);
+      }
+    } catch {
+      alert("Failed to upload cover due to network error.");
+    }
+  }
+
+  // Handle Gallery Files Upload
+  async function handleGalleryFiles(files: FileList | File[]) {
     const arr = Array.from(files).filter((f) => f.type.startsWith("image/"));
     if (!arr.length) return;
-    setUploads(arr.map((f) => ({ name: f.name, status: "uploading" })));
+    
+    const startIdx = uploads.length;
+    setUploads((prev) => [...prev, ...arr.map((f) => ({ name: f.name, status: "uploading" as const }))]);
 
-    const newWorks: GalleryWork[] = [];
+    const newUrls: string[] = [];
 
     for (let i = 0; i < arr.length; i++) {
       const file = arr[i];
       try {
         const fd = new FormData();
         fd.append("file", file);
-        const res  = await fetch("/api/upload", { method: "POST", body: fd, credentials: "same-origin" });
+        const res = await fetch("/api/upload", { method: "POST", body: fd, credentials: "same-origin" });
         const json = await res.json();
         if (res.ok) {
-          newWorks.push({ id: Date.now() + i, category: activeCat, image: json.url });
-          setUploads((prev) => prev.map((u, idx) => idx === i ? { ...u, status: "done" } : u));
+          newUrls.push(json.url);
+          setUploads((prev) => prev.map((u, idx) => idx === startIdx + i ? { ...u, status: "done" as const } : u));
         } else {
-          setUploads((prev) => prev.map((u, idx) => idx === i ? { ...u, status: "error" } : u));
+          setUploads((prev) => prev.map((u, idx) => idx === startIdx + i ? { ...u, status: "error" as const } : u));
         }
       } catch {
-        setUploads((prev) => prev.map((u, idx) => idx === i ? { ...u, status: "error" } : u));
+        setUploads((prev) => prev.map((u, idx) => idx === startIdx + i ? { ...u, status: "error" as const } : u));
       }
     }
 
-    if (newWorks.length > 0) {
-      setData({ ...data, gallery: { ...gallery, works: [...gallery.works, ...newWorks] } });
+    if (newUrls.length > 0) {
+      setImages((prev) => [...prev, ...newUrls]);
     }
-    setTimeout(() => setUploads([]), 3500);
+    setTimeout(() => setUploads([]), 3000);
   }
 
-  /* ── Delete image ── */
-  function deleteWork(id: number) {
-    setData({ ...data, gallery: { ...gallery, works: gallery.works.filter((w) => w.id !== id) } });
+  // Reorder images within project
+  function moveImage(idx: number, dir: -1 | 1) {
+    const nextIdx = idx + dir;
+    if (nextIdx < 0 || nextIdx >= images.length) return;
+    const next = [...images];
+    [next[idx], next[nextIdx]] = [next[nextIdx], next[idx]];
+    setImages(next);
   }
 
-  /* ── Move image left/right within category ── */
-  function moveWork(id: number, dir: -1 | 1) {
-    const catList = gallery.works.filter((w) => w.category === activeCat);
-    const others  = gallery.works.filter((w) => w.category !== activeCat);
-    const idx     = catList.findIndex((w) => w.id === id);
-    if (idx === -1) return;
-    const newIdx = idx + dir;
-    if (newIdx < 0 || newIdx >= catList.length) return;
-    const next = [...catList];
-    [next[idx], next[newIdx]] = [next[newIdx], next[idx]];
-    setData({ ...data, gallery: { ...gallery, works: [...others, ...next] } });
+  // Delete image from project
+  function deleteImage(idx: number) {
+    setImages(images.filter((_, i) => i !== idx));
   }
 
-  /* ── Add category ── */
-  function addCategory() {
-    const v = newCat.trim();
-    if (!v || gallery.categories.includes(v)) return;
-    const updated = { ...gallery, categories: [...gallery.categories, v] };
-    setData({ ...data, gallery: updated });
-    setActiveCat(v);
-    setNewCat("");
+  // Save Project in CMS State
+  function handleSaveProject() {
+    const company = companyName.trim();
+    if (!company) {
+      alert("Please enter a project name.");
+      return;
+    }
+
+    const projectsList = gallery.projects ?? [];
+    let updatedProjects: GalleryProject[];
+
+    if (editingProjectId === null) {
+      const newProj: GalleryProject = {
+        id: Date.now(),
+        category: activeCat,
+        companyName: company,
+        description: description.trim(),
+        coverImage: coverImage || (images[0] ?? ""),
+        images: images
+      };
+      updatedProjects = [...projectsList, newProj];
+    } else {
+      updatedProjects = projectsList.map((p) =>
+        p.id === editingProjectId
+          ? {
+              ...p,
+              companyName: company,
+              description: description.trim(),
+              coverImage: coverImage || (images[0] ?? ""),
+              images: images
+            }
+          : p
+      );
+    }
+
+    setData({
+      ...data,
+      gallery: {
+        ...gallery,
+        projects: updatedProjects
+      }
+    });
+    setIsModalOpen(false);
   }
 
-  /* ── Delete category ── */
-  function deleteCategory(cat: string) {
-    const count = gallery.works.filter((w) => w.category === cat).length;
-    const msg = count > 0
-      ? `Delete "${cat}" and its ${count} image${count > 1 ? "s" : ""}? This cannot be undone.`
-      : `Delete category "${cat}"?`;
-    if (!confirm(msg)) return;
-    const categories = gallery.categories.filter((c) => c !== cat);
-    const works      = gallery.works.filter((w) => w.category !== cat);
-    setData({ ...data, gallery: { categories, works } });
-    setActiveCat(categories[0] ?? "");
-  }
-
-  /* ── Drag & Drop ── */
+  /* Drag & Drop */
   function onDragOver(e: React.DragEvent) { e.preventDefault(); setDragging(true); }
   function onDragLeave()                   { setDragging(false); }
   function onDrop(e: React.DragEvent) {
     e.preventDefault(); setDragging(false);
-    handleFiles(e.dataTransfer.files);
+    handleGalleryFiles(e.dataTransfer.files);
   }
 
   return (
     <div>
-      <PanelHeader title="Gallery" />
-      <p className="text-zinc-600 text-xs font-heading mt-1 mb-8">
-        Upload images per category. They display in a masonry grid on your portfolio page.
-      </p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div>
+          <PanelHeader title="Gallery Projects" />
+          <p className="text-zinc-400 text-xs font-heading mt-1">
+            Manage projects per category. Each project holds a cover, description, and multiple uploaded images.
+          </p>
+        </div>
+        {gallery.categories.length > 0 && (
+          <button
+            onClick={handleAddProject}
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-brand-purple text-zinc-100 font-heading font-black text-xs hover:bg-violet-500 cursor-pointer transition-colors"
+          >
+            <Plus className="w-4 h-4" /> New Project
+          </button>
+        )}
+      </div>
 
-      {/* ── Category tabs + Add ── */}
+      {/* Categories Bar */}
       <div className="flex flex-wrap items-center gap-2 mb-8">
         {gallery.categories.map((cat) => (
           <div key={cat} className="flex items-center gap-1 group">
@@ -348,7 +522,7 @@ function GalleryPanel({ data, setData }: { data: SiteData; setData: (d: SiteData
             >
               {cat}
               <span className="ml-2 text-[9px] opacity-60">
-                {gallery.works.filter((w) => w.category === cat).length}
+                {(gallery.projects ?? []).filter((p) => p.category === cat).length}
               </span>
             </button>
             <button
@@ -383,115 +557,275 @@ function GalleryPanel({ data, setData }: { data: SiteData; setData: (d: SiteData
       {gallery.categories.length === 0 ? (
         <div className="py-20 text-center border-2 border-dashed border-zinc-800 rounded-2xl">
           <FolderPlus className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
-          <p className="text-zinc-500 font-heading font-bold text-xs uppercase tracking-widest">Create a category to start uploading</p>
+          <p className="text-zinc-500 font-heading font-bold text-xs uppercase tracking-widest">Create a category to start adding projects</p>
+        </div>
+      ) : catProjects.length === 0 ? (
+        <div className="py-20 text-center border border-dashed border-zinc-800/60 rounded-2xl">
+          <ImageIcon className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
+          <p className="text-zinc-400 font-heading font-bold text-xs uppercase tracking-widest">
+            No projects in {activeCat} yet
+          </p>
+          <p className="text-zinc-500 text-[11px] font-heading mt-1 mb-4">Click "New Project" above to create one</p>
         </div>
       ) : (
-        <>
-          {/* ── Upload zone ── */}
-          <div
-            onClick={() => fileRef.current?.click()}
-            onDragOver={onDragOver}
-            onDragLeave={onDragLeave}
-            onDrop={onDrop}
-            className={`relative flex flex-col items-center justify-center gap-3 p-8 rounded-2xl border-2 border-dashed cursor-pointer transition-all mb-6 ${dragging ? "border-brand-purple bg-brand-purple/10" : "border-zinc-800 hover:border-zinc-600 bg-zinc-950/40 hover:bg-zinc-900/40"}`}
-          >
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={(e) => e.target.files && handleFiles(e.target.files)}
-            />
-            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800">
-              <Upload className="w-5 h-5 text-zinc-500" />
-            </div>
-            <div className="text-center">
-              <p className="text-sm font-heading font-black text-zinc-300">
-                <span className="text-brand-cyan">Click to browse</span> or drag & drop
-              </p>
-              <p className="text-[11px] font-heading text-zinc-600 mt-1">
-                Select multiple images — uploading to <span className="text-brand-purple font-black">{activeCat}</span>
-              </p>
-            </div>
-          </div>
-
-          {/* ── Upload progress ── */}
-          {uploads.length > 0 && (
-            <div className="mb-6 space-y-2">
-              {uploads.map((u, i) => (
-                <div key={i} className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-zinc-950 border border-zinc-800">
-                  {u.status === "uploading" && (
-                    <div className="w-3.5 h-3.5 rounded-full border-2 border-brand-purple border-t-transparent animate-spin shrink-0" />
-                  )}
-                  {u.status === "done" && <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
-                  {u.status === "error" && <AlertCircle className="w-3.5 h-3.5 text-red-400 shrink-0" />}
-                  <span className="text-xs font-heading text-zinc-400 truncate flex-1">{u.name}</span>
-                  <span className={`text-[10px] font-heading font-black uppercase tracking-wider ${u.status === "done" ? "text-emerald-400" : u.status === "error" ? "text-red-400" : "text-zinc-600"}`}>
-                    {u.status === "uploading" ? "Uploading…" : u.status === "done" ? "Done" : "Failed"}
-                  </span>
+        /* Project list grid */
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {catProjects.map((proj, i) => {
+            const imgCount = proj.images?.length ?? 0;
+            return (
+              <div key={proj.id} className="group relative rounded-2xl border border-zinc-900 bg-zinc-950/40 p-4 flex flex-col justify-between hover:border-brand-purple/40 transition-colors">
+                <div>
+                  <div className="aspect-[4/3] rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800/60 mb-4 relative">
+                    {proj.coverImage ? (
+                      <img src={proj.coverImage} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-zinc-950">
+                        <ImageIcon className="w-8 h-8 text-zinc-800" />
+                      </div>
+                    )}
+                    <span className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-black/85 text-[9px] font-heading font-black text-zinc-300 tracking-wider">
+                      {imgCount} photo{imgCount !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+                  <h4 className="font-display font-black text-base text-zinc-200 truncate">{proj.companyName}</h4>
+                  <p className="text-zinc-500 text-xs font-sans mt-1 line-clamp-2 leading-relaxed h-8">
+                    {proj.description || "No description provided."}
+                  </p>
                 </div>
-              ))}
-            </div>
-          )}
-
-          {/* ── Image grid ── */}
-          {catWorks.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-              {catWorks.map((work, i) => (
-                <div key={work.id} className="group relative aspect-square rounded-xl overflow-hidden border border-zinc-800/60 bg-zinc-950">
-                  <img src={work.image} alt="" className="w-full h-full object-cover" />
-
-                  {/* Hover overlay */}
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col items-center justify-center gap-2">
-                    {/* Delete */}
+                <div className="flex items-center justify-between mt-5 pt-4 border-t border-zinc-900">
+                  <div className="flex gap-1.5">
                     <button
-                      onClick={() => deleteWork(work.id)}
-                      className="p-2 rounded-lg bg-red-950/80 border border-red-900/60 text-red-400 hover:bg-red-900 cursor-pointer transition-all"
-                      title="Delete"
+                      onClick={() => moveProject(proj.id, -1)}
+                      disabled={i === 0}
+                      className="p-1.5 rounded-lg bg-zinc-900/60 border border-zinc-800/60 text-zinc-550 hover:text-zinc-200 disabled:opacity-30 cursor-pointer"
+                      title="Move Up"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <ChevronLeft className="w-3.5 h-3.5 rotate-90" />
                     </button>
+                    <button
+                      onClick={() => moveProject(proj.id, 1)}
+                      disabled={i === catProjects.length - 1}
+                      className="p-1.5 rounded-lg bg-zinc-900/60 border border-zinc-800/60 text-zinc-550 hover:text-zinc-200 disabled:opacity-30 cursor-pointer"
+                      title="Move Down"
+                    >
+                      <ChevronRight className="w-3.5 h-3.5 rotate-90" />
+                    </button>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleEditProject(proj)}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-355 font-heading font-bold text-[10px] uppercase tracking-wider cursor-pointer transition-colors"
+                    >
+                      <Pencil className="w-3 h-3" /> Edit
+                    </button>
+                    <button
+                      onClick={() => deleteProject(proj.id)}
+                      className="p-2 rounded-lg bg-red-950/40 hover:bg-red-900 border border-red-900/20 text-red-400 cursor-pointer transition-colors"
+                      title="Delete Project"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-                    {/* Reorder */}
-                    <div className="flex gap-1.5">
-                      <button
-                        onClick={() => moveWork(work.id, -1)}
-                        disabled={i === 0}
-                        className="p-1.5 rounded-lg bg-zinc-900/80 border border-zinc-700 text-zinc-400 hover:text-zinc-100 disabled:opacity-30 cursor-pointer transition-all"
-                        title="Move left"
-                      >
-                        <ChevronLeft className="w-3 h-3" />
-                      </button>
-                      <button
-                        onClick={() => moveWork(work.id, 1)}
-                        disabled={i === catWorks.length - 1}
-                        className="p-1.5 rounded-lg bg-zinc-900/80 border border-zinc-700 text-zinc-400 hover:text-zinc-100 disabled:opacity-30 cursor-pointer transition-all"
-                        title="Move right"
-                      >
-                        <ChevronRight className="w-3 h-3" />
-                      </button>
+      {/* Modal editor */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="w-full max-w-4xl bg-zinc-950 border border-zinc-850 rounded-3xl overflow-hidden shadow-[0_0_60px_rgba(0,0,0,0.85)] flex flex-col max-h-[90vh]"
+            >
+              {/* Modal Header */}
+              <div className="px-6 py-4 border-b border-zinc-900 flex justify-between items-center bg-zinc-950">
+                <div>
+                  <h3 className="font-display font-black text-zinc-200 text-lg uppercase tracking-wider">
+                    {editingProjectId === null ? "Create Project" : "Edit Project"}
+                  </h3>
+                  <p className="text-zinc-450 text-[10px] font-heading mt-0.5 uppercase tracking-widest">
+                    Category: <span className="text-brand-purple">{activeCat}</span>
+                  </p>
+                </div>
+                <button onClick={() => setIsModalOpen(false)} className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 cursor-pointer">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Left Column: Form Details */}
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-[10px] font-heading font-black uppercase tracking-widest text-zinc-500 mb-2">Project / Company Name</label>
+                      <input
+                        type="text"
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
+                        placeholder="e.g. Nike Commercial, Apex Branding"
+                        className="w-full px-4 py-3 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-200 focus:outline-none focus:border-brand-purple/50 text-sm font-heading"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-heading font-black uppercase tracking-widest text-zinc-500 mb-2">Description</label>
+                      <textarea
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        rows={4}
+                        placeholder="Describe the company project, scope of work, and key results..."
+                        className="w-full px-4 py-3.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-200 focus:outline-none focus:border-brand-purple/50 text-sm font-heading resize-none leading-relaxed"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-heading font-black uppercase tracking-widest text-zinc-500 mb-2">Cover Image (Leave empty to use first gallery image)</label>
+                      <input
+                        ref={coverFileRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleCoverUpload}
+                      />
+                      {coverImage ? (
+                        <div className="relative rounded-xl overflow-hidden aspect-[4/3] border border-zinc-800 bg-zinc-900/40 w-44">
+                          <img src={coverImage} alt="Cover Preview" className="w-full h-full object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => setCoverImage("")}
+                            className="absolute top-2 right-2 p-1 rounded bg-black/80 hover:bg-red-950 text-zinc-400 hover:text-red-400 border border-zinc-800 transition-colors"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => coverFileRef.current?.click()}
+                          className="flex flex-col items-center justify-center p-5 rounded-xl border border-dashed border-zinc-800 hover:border-zinc-700 bg-zinc-950/40 hover:bg-zinc-900/40 cursor-pointer w-44 transition-colors"
+                        >
+                          <Upload className="w-5 h-5 text-zinc-500 mb-1" />
+                          <span className="text-[10px] font-heading font-black text-brand-cyan uppercase tracking-wider">Upload Cover</span>
+                        </button>
+                      )}
                     </div>
                   </div>
 
-                  {/* Index badge */}
-                  <span className="absolute top-1.5 left-1.5 w-5 h-5 rounded-md bg-black/70 flex items-center justify-center text-[9px] font-heading font-black text-zinc-400">
-                    {i + 1}
-                  </span>
+                  {/* Right Column: Gallery Uploads */}
+                  <div className="space-y-4">
+                    <label className="block text-[10px] font-heading font-black uppercase tracking-widest text-zinc-500 mb-2">Project Gallery Photos</label>
+                    <div
+                      onClick={() => galleryFilesRef.current?.click()}
+                      onDragOver={onDragOver}
+                      onDragLeave={onDragLeave}
+                      onDrop={onDrop}
+                      className={`relative flex flex-col items-center justify-center gap-2 p-6 rounded-xl border border-dashed cursor-pointer transition-all ${dragging ? "border-brand-purple bg-brand-purple/10" : "border-zinc-800 hover:border-zinc-700 bg-zinc-950/40 hover:bg-zinc-900/40"}`}
+                    >
+                      <input
+                        ref={galleryFilesRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => e.target.files && handleGalleryFiles(e.target.files)}
+                      />
+                      <Upload className="w-5 h-5 text-zinc-500 mb-1" />
+                      <p className="text-xs font-heading font-bold text-zinc-400 text-center">
+                        <span className="text-brand-cyan">Click to browse</span> or drag images here
+                      </p>
+                    </div>
+
+                    {uploads.length > 0 && (
+                      <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
+                        {uploads.map((u, i) => (
+                          <div key={i} className="flex items-center gap-3 px-3 py-1.5 rounded-lg bg-zinc-950 border border-zinc-900 text-[10px]">
+                            {u.status === "uploading" && <div className="w-3 h-3 rounded-full border border-brand-purple border-t-transparent animate-spin" />}
+                            {u.status === "done" && <Check className="w-3 h-3 text-emerald-400" />}
+                            {u.status === "error" && <AlertCircle className="w-3 h-3 text-red-400" />}
+                            <span className="text-zinc-500 truncate flex-1 font-heading">{u.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {images.length > 0 ? (
+                      <div className="grid grid-cols-3 gap-2.5 max-h-[30vh] overflow-y-auto pr-1">
+                        {images.map((img, idx) => (
+                          <div key={idx} className="group relative aspect-square rounded-xl overflow-hidden border border-zinc-800 bg-zinc-900">
+                            <img src={img} alt="" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => deleteImage(idx)}
+                                className="p-1 rounded bg-red-950/80 border border-red-900/60 text-red-400 hover:bg-red-900 cursor-pointer"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                              <div className="flex gap-1">
+                                <button
+                                  type="button"
+                                  onClick={() => moveImage(idx, -1)}
+                                  disabled={idx === 0}
+                                  className="p-1 rounded bg-zinc-900/80 border border-zinc-700 text-zinc-400 hover:text-zinc-100 disabled:opacity-30 cursor-pointer"
+                                >
+                                  <ChevronLeft className="w-3 h-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => moveImage(idx, 1)}
+                                  disabled={idx === images.length - 1}
+                                  className="p-1 rounded bg-zinc-900/80 border border-zinc-700 text-zinc-400 hover:text-zinc-100 disabled:opacity-30 cursor-pointer"
+                                >
+                                  <ChevronRight className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                            <span className="absolute top-1 left-1 px-1 rounded bg-black/70 text-[8px] font-heading font-black text-zinc-500">
+                              {idx + 1}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="py-8 text-center border border-dashed border-zinc-900 rounded-xl">
+                        <ImageIcon className="w-6 h-6 text-zinc-800 mx-auto mb-2" />
+                        <p className="text-zinc-750 font-heading font-bold text-[10px] uppercase tracking-wider">Gallery is empty</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <div className="py-16 text-center border border-dashed border-zinc-800/60 rounded-2xl">
-              <ImageIcon className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
-              <p className="text-zinc-600 font-heading font-bold text-xs uppercase tracking-widest">
-                No images in {activeCat} yet
-              </p>
-              <p className="text-zinc-700 text-[11px] font-heading mt-1">Upload images using the zone above</p>
-            </div>
-          )}
-        </>
-      )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="px-6 py-4 border-t border-zinc-900 bg-zinc-950 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="flex-1 py-3 rounded-xl border border-zinc-800 text-zinc-550 font-heading font-bold text-xs uppercase tracking-wider cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveProject}
+                  className="flex-1 py-3 rounded-xl bg-brand-purple text-zinc-100 font-heading font-black text-xs uppercase tracking-wider hover:bg-violet-500 cursor-pointer transition-colors"
+                >
+                  Save Project
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

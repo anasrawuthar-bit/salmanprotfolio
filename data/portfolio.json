@@ -5,91 +5,50 @@
       "Illustration",
       "Logo Branding"
     ],
-    "works": [
+    "projects": [
       {
         "id": 1782485856806,
         "category": "Logo Branding",
-        "image": "/uploads/1782485856794-ChatGPT_Image_Jun_13__2026__09_38_53_PM.png"
-      },
-      {
-        "id": 1782485856847,
-        "category": "Logo Branding",
-        "image": "/uploads/1782485856836-ChatGPT_Image_Jun_13__2026__09_38_07_PM.png"
-      },
-      {
-        "id": 1782485888642,
-        "category": "Logo Branding",
-        "image": "/uploads/1782485888599-peter-thomas-KyQYGNx3YFw-unsplash.jpg"
-      },
-      {
-        "id": 1782485888730,
-        "category": "Logo Branding",
-        "image": "/uploads/1782485888702-musa-ortac-m9Mg60saOeA-unsplash.jpg"
-      },
-      {
-        "id": 1782486026285,
-        "category": "Logo Branding",
-        "image": "/uploads/1782486025842-peter-thomas-KyQYGNx3YFw-unsplash.jpg"
-      },
-      {
-        "id": 1782486026800,
-        "category": "Logo Branding",
-        "image": "/uploads/1782486026333-musa-ortac-m9Mg60saOeA-unsplash.jpg"
-      },
-      {
-        "id": 1782486036587,
-        "category": "Logo Branding",
-        "image": "/uploads/1782486035513-ChatGPT_Image_Jun_13__2026__09_38_53_PM.png"
-      },
-      {
-        "id": 1782486037857,
-        "category": "Logo Branding",
-        "image": "/uploads/1782486036618-ChatGPT_Image_Jun_13__2026__09_38_07_PM.png"
+        "companyName": "Visual Identity Showcase",
+        "description": "A collection of premium vector logos and brand identity guidelines crafted for clients.",
+        "coverImage": "/uploads/1782485856794-ChatGPT_Image_Jun_13__2026__09_38_53_PM.png",
+        "images": [
+          "/uploads/1782485856794-ChatGPT_Image_Jun_13__2026__09_38_53_PM.png",
+          "/uploads/1782485856836-ChatGPT_Image_Jun_13__2026__09_38_07_PM.png",
+          "/uploads/1782485888599-peter-thomas-KyQYGNx3YFw-unsplash.jpg",
+          "/uploads/1782485888702-musa-ortac-m9Mg60saOeA-unsplash.jpg",
+          "/uploads/1782486025842-peter-thomas-KyQYGNx3YFw-unsplash.jpg",
+          "/uploads/1782486026333-musa-ortac-m9Mg60saOeA-unsplash.jpg",
+          "/uploads/1782486035513-ChatGPT_Image_Jun_13__2026__09_38_53_PM.png",
+          "/uploads/1782486036618-ChatGPT_Image_Jun_13__2026__09_38_07_PM.png"
+        ]
       },
       {
         "id": 1782488116129,
         "category": "Designs",
-        "image": "/uploads/1782488116125-download-1.jpg"
-      },
-      {
-        "id": 1782488116100,
-        "category": "Designs",
-        "image": "/uploads/1782488116091-Screenshot_2026-06-25_at_4.14.06_PM.png"
-      },
-      {
-        "id": 1782488116151,
-        "category": "Designs",
-        "image": "/uploads/1782488116146-download.jpg"
+        "companyName": "Graphic Design Projects",
+        "description": "Creative layouts, branding graphics, and high-impact custom design assets.",
+        "coverImage": "/uploads/1782488116125-download-1.jpg",
+        "images": [
+          "/uploads/1782488116125-download-1.jpg",
+          "/uploads/1782488116091-Screenshot_2026-06-25_at_4.14.06_PM.png",
+          "/uploads/1782488116146-download.jpg"
+        ]
       },
       {
         "id": 1782488111819,
         "category": "Illustration",
-        "image": "/uploads/1782488111810-IMG-20260620-WA0009.png"
-      },
-      {
-        "id": 1782488111716,
-        "category": "Illustration",
-        "image": "/uploads/1782488111702-Screenshot_2026-06-25_at_4.14.06_PM.png"
-      },
-      {
-        "id": 1782488111754,
-        "category": "Illustration",
-        "image": "/uploads/1782488111749-download-1.jpg"
-      },
-      {
-        "id": 1782488111767,
-        "category": "Illustration",
-        "image": "/uploads/1782488111763-download.jpg"
-      },
-      {
-        "id": 1782488111800,
-        "category": "Illustration",
-        "image": "/uploads/1782488111787-Screenshot_2026-06-14_at_3.59.09_PM.png"
-      },
-      {
-        "id": 1782488111856,
-        "category": "Illustration",
-        "image": "/uploads/1782488111839-Screenshot_2026-06-19_at_5.25.09_PM.png"
+        "companyName": "Digital Illustrations Collection",
+        "description": "Custom artworks, vector illustrations, and detailed character concepts.",
+        "coverImage": "/uploads/1782488111810-IMG-20260620-WA0009.png",
+        "images": [
+          "/uploads/1782488111810-IMG-20260620-WA0009.png",
+          "/uploads/1782488111702-Screenshot_2026-06-25_at_4.14.06_PM.png",
+          "/uploads/1782488111749-download-1.jpg",
+          "/uploads/1782488111763-download.jpg",
+          "/uploads/1782488111787-Screenshot_2026-06-14_at_3.59.09_PM.png",
+          "/uploads/1782488111839-Screenshot_2026-06-19_at_5.25.09_PM.png"
+        ]
       }
     ]
   },
