@@ -2,7 +2,8 @@
   "gallery": {
     "categories": [
       "social media creatives",
-      "special day creatives"
+      "special day creatives",
+      "Advertising Design"
     ],
     "projects": [
       {
@@ -245,6 +246,42 @@
           "/uploads/1782751298445-ignitio_Kerala_piravi_poster.png",
           "/uploads/1782751299084-Mundath_dental_clinic_kerala_piravi__poster_2.png",
           "/uploads/1782751300569-Mundath_dental_clinic_piravi_poster_1.png"
+        ]
+      },
+      {
+        "id": 1782754589124,
+        "category": "Advertising Design",
+        "companyName": "banners",
+        "description": "",
+        "coverImage": "/uploads/1782754514779-ChatGPT_Image_Jun_29__2026__10_58_00_PM.png",
+        "images": [
+          "/uploads/1782754538871-ChatGPT_Image_Jun_29__2026__10_30_04_PM.png",
+          "/uploads/1782754539435-ChatGPT_Image_Jun_29__2026__10_24_14_PM.png",
+          "/uploads/1782754558678-koppam.png"
+        ]
+      },
+      {
+        "id": 1782756747076,
+        "category": "Advertising Design",
+        "companyName": "EVENT PLANNERS 3 foold brousher-02",
+        "description": "",
+        "coverImage": "/uploads/1782755307133-ChatGPT_Image_Jun_29__2026__11_18_06_PM.png",
+        "images": [
+          "/uploads/1782755357862-EVENTS--__EVENT_PLANNERS_3_foold_brousher-01.png",
+          "/uploads/1782755359256-EVENTS--__EVENT_PLANNERS_3_foold_brousher-02.png",
+          "/uploads/1782756376777-ChatGPT_Image_Jun_29__2026__11_36_02_PM.png"
+        ]
+      },
+      {
+        "id": 1782757450107,
+        "category": "Advertising Design",
+        "companyName": "anniversary flyer design",
+        "description": "",
+        "coverImage": "/uploads/1782757328309-417616732_11667551.jpg",
+        "images": [
+          "/uploads/1782756933054-we_five_A3.jpg",
+          "/uploads/1782759167354-ChatGPT_Image_Jun_30__2026__12_22_30_AM.png",
+          "/uploads/1782759167619-Curved_Poster_Mockup_5.jpg"
         ]
       }
     ]
