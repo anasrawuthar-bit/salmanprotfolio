@@ -215,3 +215,23 @@ body {
   content: "INITIALIZING ENVIRONMENT";
   animation: pl-status-anim 3.0s step-end forwards;
 }
+
+@keyframes pl-exit {
+  0%, 82% {
+    transform: translateY(0%);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+  100% {
+    transform: translateY(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+.pl-container {
+  animation: pl-exit 3.8s cubic-bezier(0.76, 0, 0.24, 1) forwards;
+  will-change: transform, opacity;
+}

@@ -1,26 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-
-/* Total animation duration — must match CSS pl-bar animation */
-const DISMISS_AFTER = 3600; // ms
+import { useEffect, useState } from "react";
 
 const LETTERS = ["S", "A", "L", "M", "A", "N"];
 
 export default function Preloader() {
   const [mounted, setMounted] = useState(true);
-  const [fade, setFade] = useState(false);
-  const doneRef = useRef(false);
-
-  const dismiss = () => {
-    if (doneRef.current) return;
-    doneRef.current = true;
-    try { sessionStorage.setItem("preloader-done", "1"); } catch (_) {}
-    setFade(true);
-    setTimeout(() => {
-      setMounted(false);
-    }, 850); // Unmount from DOM after transition completes
-  };
 
   useEffect(() => {
     // Never show on /admin
@@ -28,6 +13,7 @@ export default function Preloader() {
       setMounted(false);
       return;
     }
+
     // Skip if already played this session
     try {
       if (sessionStorage.getItem("preloader-done")) {
@@ -36,24 +22,28 @@ export default function Preloader() {
       }
     } catch (_) {}
 
-    // Single timeout — the ONLY dismiss mechanism needed
-    const t = setTimeout(dismiss, DISMISS_AFTER);
+    // Hard unmount from DOM after the CSS exit animation completes
+    const t = setTimeout(() => {
+      try {
+        sessionStorage.setItem("preloader-done", "1");
+      } catch (_) {}
+      setMounted(false);
+    }, 4500);
+
     return () => clearTimeout(t);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const skipIntro = () => {
+    try {
+      sessionStorage.setItem("preloader-done", "1");
+    } catch (_) {}
+    setMounted(false);
+  };
 
   if (!mounted) return null;
 
   return (
-    <div
-      style={{
-        transition: "transform 0.85s cubic-bezier(0.76, 0, 0.24, 1), opacity 0.85s cubic-bezier(0.76, 0, 0.24, 1)",
-        transform: fade ? "translateY(-100%)" : "translateY(0%)",
-        opacity: fade ? 0 : 1,
-        pointerEvents: fade ? "none" : "auto",
-      }}
-      className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[#050507] select-none overflow-hidden"
-    >
+    <div className="pl-container fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-[#050507] select-none overflow-hidden">
       {/* ── Ambient blobs ── */}
       <div className="absolute w-[500px] h-[500px] rounded-full bg-brand-purple/15 blur-[140px] pointer-events-none top-0 left-0 -translate-x-1/3 -translate-y-1/3 animate-float-pulse" />
       <div className="absolute w-[400px] h-[400px] rounded-full bg-brand-cyan/12 blur-[130px] pointer-events-none bottom-0 right-0 translate-x-1/3 translate-y-1/3" style={{ animation: "float-pulse 7s ease-in-out infinite 2s" }} />
@@ -123,7 +113,7 @@ export default function Preloader() {
 
       {/* Skip */}
       <button
-        onClick={dismiss}
+        onClick={skipIntro}
         className="absolute bottom-8 px-5 py-2 rounded-lg border border-zinc-800/80 bg-zinc-950/60 text-[8px] font-heading font-bold tracking-[0.3em] uppercase text-zinc-500 hover:text-zinc-200 hover:border-zinc-600 cursor-pointer backdrop-blur-sm transition-all duration-200"
       >
         Skip Intro
